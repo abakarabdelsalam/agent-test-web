@@ -29,6 +29,10 @@ public class ExploreController {
 
     @PostMapping("/explore")
     public RunReport explore(@RequestBody ExploreRequest request) {
+        // Une requête mal formée n'est pas un site interdit : 400 plutôt que 403.
+        if (request.url() == null || request.url().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le champ url est obligatoire");
+        }
         if (!allowedSites.allows(request.url())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Site non autorisé");
         }

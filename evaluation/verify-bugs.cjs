@@ -51,7 +51,10 @@ const CHECKS = {
   'recherche-casse': async (p, b) => { await open(p, b); await p.fill(id('search'), 'casque'); await p.waitForTimeout(100); return (await names(p)).length === 0; },
   'tri-inverse': async (p, b) => { await open(p, b); await p.selectOption(id('sort'), 'asc'); return (await names(p))[0].includes('Écran 27'); },
   'filtre-categorie': async (p, b) => { await open(p, b); await p.selectOption(id('category'), 'Audio'); return (await names(p)).some((n) => n.includes('Câble')); },
-  'rupture-ajoutable': async (p, b) => { await open(p, b); await add(p, 'Webcam'); await cart(p); return (await p.locator(id('line-name')).allTextContents()).some((n) => n.includes('Webcam')); },
+  'rupture-ajoutable': async (p, b) => { await open(p, b); await add(p, 'Webcam'); await cart(p);
+    // Le titre du panier s'affiche avant ses lignes : sans cette attente, la liste est lue vide.
+    await p.locator(id('line-name')).first().waitFor({ timeout: 2000 }).catch(() => {});
+    return (await p.locator(id('line-name')).allTextContents()).some((n) => n.includes('Webcam')); },
   'prix-different': async (p, b) => {
     await open(p, b);
     const card = await p.locator(id('product-card'), { hasText: 'Clavier' }).locator(id('card-price')).textContent();
