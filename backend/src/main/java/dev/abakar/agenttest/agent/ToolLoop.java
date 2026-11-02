@@ -33,11 +33,13 @@ public class ToolLoop {
     private final ClaudeClient claude;
     private final AllowedSites allowedSites;
     private final ReportValidator validator;
+    private final AgentTrace trace;
 
-    public ToolLoop(ClaudeClient claude, AllowedSites allowedSites, ReportValidator validator) {
+    public ToolLoop(ClaudeClient claude, AllowedSites allowedSites, ReportValidator validator, AgentTrace trace) {
         this.claude = claude;
         this.allowedSites = allowedSites;
         this.validator = validator;
+        this.trace = trace;
     }
 
     public AgentRun run(BrowserSession session, String url, String instruction) {
@@ -48,9 +50,11 @@ public class ToolLoop {
         // L'API ne garde aucune mémoire : on lui renvoie tout l'historique à chaque tour.
         List<Map<String, Object>> messages = new ArrayList<>();
         messages.add(Map.of("role", "user", "content", "Site : " + url + "\nConsigne : " + instruction));
+        trace.start(url, instruction);
 
         while (true) {
             ClaudeReply reply = claude.converse(SYSTEM_PROMPT, messages, BrowserTools.DEFINITIONS);
+            trace.thought(reply.text());
 
             // On ajoute la réponse telle quelle : ses blocs tool_use et de réflexion doivent revenir intacts.
             messages.add(Map.of("role", "assistant", "content", reply.content()));
@@ -70,6 +74,7 @@ public class ToolLoop {
                 }
                 ToolResult result = tools.execute(call);
                 actions.add(new AgentRun.Action(call.name(), call.input(), result.text(), result.error()));
+                trace.action(actions.size(), MAX_ACTIONS, call.name(), call.input(), result);
                 results.add(result.toBlock(call.id()));
             }
 
@@ -80,7 +85,8 @@ public class ToolLoop {
 
     private AgentRun finish(String instruction, String endedBy, String finalText,
             List<AgentRun.Action> actions, String url, BrowserTools tools) {
-        // Comme au jour précédent, aucun rapport ne sort sans passer par le validateur.
+        trace.stop(endedBy, actions.size());
+        // Aucun rapport ne sort sans passer par le validateur.
         RunReport report = validator.validate(new RunReport(url, tools.bugs()));
         return new AgentRun(instruction, endedBy, finalText, List.copyOf(actions), report);
     }

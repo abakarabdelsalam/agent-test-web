@@ -1,6 +1,7 @@
 package dev.abakar.agenttest.browser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -65,6 +66,18 @@ class PlaywrightBrowserSessionTest {
             byte[] png = session.capture();
             assertTrue(Arrays.equals(new byte[] {(byte) 0x89, 'P', 'N', 'G'}, Arrays.copyOf(png, 4)));
         }
+    }
+
+    @Test
+    void observationModeShowsWindowAndPausesOneSecond() {
+        assertFalse(PlaywrightBrowserSession.launchOptions(true).headless);
+        assertEquals(1_000, PlaywrightBrowserSession.pauseFor(true));
+    }
+
+    @Test
+    void defaultModeStaysHiddenWithoutPause() {
+        assertTrue(PlaywrightBrowserSession.launchOptions(false).headless);
+        assertEquals(0, PlaywrightBrowserSession.pauseFor(false));
     }
 
     @Test

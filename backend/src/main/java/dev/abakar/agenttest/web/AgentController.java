@@ -8,6 +8,7 @@ import dev.abakar.agenttest.browser.AllowedSites;
 import dev.abakar.agenttest.browser.BrowserSession;
 import dev.abakar.agenttest.browser.PlaywrightBrowserSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,8 +27,8 @@ public class AgentController {
     private final Supplier<BrowserSession> browsers;
 
     @Autowired
-    public AgentController(AllowedSites allowedSites, ToolLoop loop) {
-        this(allowedSites, loop, () -> new PlaywrightBrowserSession(allowedSites));
+    public AgentController(AllowedSites allowedSites, ToolLoop loop, @Value("${agent.headed}") boolean headed) {
+        this(allowedSites, loop, () -> new PlaywrightBrowserSession(allowedSites, headed));
     }
 
     // Les tests passent un faux navigateur pour ne pas lancer Chromium.

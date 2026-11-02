@@ -16,7 +16,8 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
   - tout outil inconnu est refusé ;
   - chaque bug signalé est validé avant d'entrer dans le rapport JSON ;
   - le contenu des pages est traité comme une donnée, jamais comme une instruction.
-- **Tests** : 46 tests backend, tous réussis lors de la dernière exécution (`mvn clean test`).
+- **Mode observation** (désactivé par défaut) : fenêtre Chromium visible, pause d'une seconde entre les actions et journal en français dans la console du backend.
+- **Tests** : 54 tests backend, tous réussis lors de la dernière exécution (`mvn clean test`).
 
 ## Prochaines étapes
 
@@ -105,6 +106,30 @@ La réponse contient :
 - le rapport de bugs validé.
 
 En mode simulé, le scénario enregistré est toujours le même : il ouvre http://localhost:4200 et cherche « casque », quelle que soit la consigne.
+
+## Observer l'agent
+
+Pour regarder l'agent travailler, lance le backend avec `AGENT_HEADED=true` :
+
+```powershell
+cd backend
+$env:CLAUDE_MODE = "fake"
+$env:AGENT_HEADED = "true"
+mvn spring-boot:run
+```
+
+Puis lance l'agent comme ci-dessus.
+- Chromium s'ouvre dans une vraie fenêtre et attend une seconde avant chaque action.
+- La console du backend affiche chaque étape : numéro de l'action, outil choisi, paramètres, résultat résumé et raison de l'arrêt.
+
+Exemple :
+
+```text
+Action 3/5 : remplir {selecteur=[data-testid="search"], texte=casque} -> Champ rempli.
+Arrêt après 4 action(s) : le modèle a terminé
+```
+
+Le journal n'affiche jamais la clé API ni les en-têtes d'authentification. Il ne contient que les actions de l'agent.
 
 ## Appeler vraiment Claude
 

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.LoadState;
@@ -13,6 +14,7 @@ public class PlaywrightBrowserSession implements BrowserSession {
 
     private static final int ACTION_TIMEOUT_MS = 5_000;
     private static final int RENDER_DELAY_MS = 200;
+    private static final int OBSERVATION_PAUSE_MS = 1_000;
     private static final int MAX_TEXT_CHARS = 4_000;
 
     // Liste les éléments cliquables ou remplissables avec un sélecteur que le modèle peut réutiliser.
@@ -35,15 +37,22 @@ public class PlaywrightBrowserSession implements BrowserSession {
             """;
 
     private final AllowedSites allowedSites;
+    private final int pauseMs;
     private final Playwright playwright;
     private final Browser browser;
     private final Page page;
 
     public PlaywrightBrowserSession(AllowedSites allowedSites) {
+        this(allowedSites, false);
+    }
+
+    /** headed : fenêtre visible et pause entre les actions, pour regarder l'agent travailler. */
+    public PlaywrightBrowserSession(AllowedSites allowedSites, boolean headed) {
         this.allowedSites = allowedSites;
+        this.pauseMs = pauseFor(headed);
         playwright = Playwright.create();
         try {
-            browser = playwright.chromium().launch();
+            browser = playwright.chromium().launch(launchOptions(headed));
             BrowserContext context = browser.newContext();
             // Deuxième garde-fou : même un clic sur un lien externe ne sort pas des hôtes autorisés.
             context.route("**/*", route -> {
@@ -63,12 +72,14 @@ public class PlaywrightBrowserSession implements BrowserSession {
 
     @Override
     public void open(String url) {
+        pauseForObserver();
         page.navigate(url);
         settle();
     }
 
     @Override
     public String readPage() {
+        pauseForObserver();
         String text = page.locator("body").innerText();
         if (text.length() > MAX_TEXT_CHARS) {
             text = text.substring(0, MAX_TEXT_CHARS) + "\n[texte tronqué]";
@@ -85,6 +96,7 @@ public class PlaywrightBrowserSession implements BrowserSession {
 
     @Override
     public void click(String selector) {
+        pauseForObserver();
         page.locator(selector).first().click();
         settle();
         // La requête bloquée laisse Chromium sur sa page d'erreur : on revient sur le site testé.
@@ -96,12 +108,14 @@ public class PlaywrightBrowserSession implements BrowserSession {
 
     @Override
     public void fill(String selector, String text) {
+        pauseForObserver();
         page.locator(selector).first().fill(text);
         settle();
     }
 
     @Override
     public byte[] capture() {
+        pauseForObserver();
         return page.screenshot();
     }
 
@@ -114,6 +128,21 @@ public class PlaywrightBrowserSession implements BrowserSession {
     public void close() {
         browser.close();
         playwright.close();
+    }
+
+    static BrowserType.LaunchOptions launchOptions(boolean headed) {
+        return new BrowserType.LaunchOptions().setHeadless(!headed);
+    }
+
+    static int pauseFor(boolean headed) {
+        return headed ? OBSERVATION_PAUSE_MS : 0;
+    }
+
+    // En mode observation, on laisse le temps de voir l'état de la page avant chaque action.
+    private void pauseForObserver() {
+        if (pauseMs > 0) {
+            page.waitForTimeout(pauseMs);
+        }
     }
 
     // Angular met à jour la page juste après l'action : on laisse le rendu se terminer.

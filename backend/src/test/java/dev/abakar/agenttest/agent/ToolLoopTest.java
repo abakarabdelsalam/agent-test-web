@@ -21,10 +21,22 @@ class ToolLoopTest {
     private static final String URL = "http://localhost:4200";
 
     private final RecordingBrowserSession session = new RecordingBrowserSession();
+    private final List<String> console = new ArrayList<>();
 
     private ToolLoop loopWith(ClaudeClient claude) {
         return new ToolLoop(claude, new AllowedSites(Set.of("localhost")),
-                new ReportValidator(Validation.buildDefaultValidatorFactory().getValidator()));
+                new ReportValidator(Validation.buildDefaultValidatorFactory().getValidator()),
+                new AgentTrace(true, console::add));
+    }
+
+    @Test
+    void printsEachActionAndTheReasonToStop() {
+        loopWith(new FakeClaudeClient()).run(session, URL, "Cherche casque");
+
+        assertTrue(console.getFirst().startsWith("Début du parcours sur " + URL));
+        assertTrue(console.stream().anyMatch(line -> line.startsWith("Action 1/5 : ouvrir {url=" + URL + "}")));
+        assertTrue(console.stream().anyMatch(line -> line.startsWith("Action 3/5 : remplir")));
+        assertEquals("Arrêt après 4 action(s) : le modèle a terminé", console.getLast());
     }
 
     @Test

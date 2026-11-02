@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import dev.abakar.agenttest.agent.AgentTrace;
 import dev.abakar.agenttest.agent.ToolLoop;
 import dev.abakar.agenttest.browser.AllowedSites;
 import dev.abakar.agenttest.browser.BrowserSession;
@@ -27,7 +28,8 @@ class AgentControllerTest {
 
     private final MockMvc mvc = MockMvcBuilders.standaloneSetup(new AgentController(allowedSites,
             new ToolLoop(new FakeClaudeClient(), allowedSites,
-                    new ReportValidator(Validation.buildDefaultValidatorFactory().getValidator())),
+                    new ReportValidator(Validation.buildDefaultValidatorFactory().getValidator()),
+                    new AgentTrace(false)),
             () -> {
                 launched.incrementAndGet();
                 return session;
