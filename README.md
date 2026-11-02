@@ -4,7 +4,7 @@ Agent IA qui parcourt un site comme un utilisateur, compare ce qu'il voit aux sp
 
 Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 
-**État actuel : jour 1 sur 14.** Le site de test et le premier appel au modèle sont en place. L'agent lui-même arrive à partir du jour 3.
+**État actuel : jour 2.** Le backend ouvre le site avec Playwright, applique 3 vérifications écrites à la main et produit un rapport JSON validé. L'IA qui décide seule arrive à partir du jour 3.
 
 ## Structure
 
@@ -61,6 +61,16 @@ Dans un second terminal :
 ```powershell
 Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/ask -ContentType "application/json; charset=utf-8" -Body '{"prompt":"Bonjour"}'
 ```
+
+## Explorer le catalogue (jour 2)
+
+Lance le site de test sur le port 4200 et le backend, puis :
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/explore -ContentType "application/json; charset=utf-8" -Body '{"url":"http://localhost:4200"}' | ConvertTo-Json -Depth 5
+```
+
+Seuls `localhost` et `127.0.0.1` sont autorisés.
 
 ## Appeler vraiment Claude
 
