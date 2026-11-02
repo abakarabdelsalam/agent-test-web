@@ -8,3 +8,6 @@ target/
 .idea/
 .vscode/
 *.log
+CLAUDE.md
+docs/
+.claude/

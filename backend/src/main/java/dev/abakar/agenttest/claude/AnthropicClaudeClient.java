@@ -1,5 +1,7 @@
 package dev.abakar.agenttest.claude;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,16 +19,19 @@ public class AnthropicClaudeClient implements ClaudeClient {
     private final RestClient restClient;
     private final String model;
     private final int maxTokens;
+    private final int toolMaxTokens;
 
     public AnthropicClaudeClient(
             @Value("${agent.claude.api-key}") String apiKey,
             @Value("${agent.claude.model}") String model,
-            @Value("${agent.claude.max-tokens}") int maxTokens) {
+            @Value("${agent.claude.max-tokens}") int maxTokens,
+            @Value("${agent.claude.tool-max-tokens}") int toolMaxTokens) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException("ANTHROPIC_API_KEY est requise quand CLAUDE_MODE=real");
         }
         this.model = model;
         this.maxTokens = maxTokens;
+        this.toolMaxTokens = toolMaxTokens;
         this.restClient = RestClient.builder()
                 .baseUrl("https://api.anthropic.com")
                 .defaultHeader("x-api-key", apiKey)
@@ -41,19 +46,36 @@ public class AnthropicClaudeClient implements ClaudeClient {
                 "max_tokens", maxTokens,
                 "messages", List.of(Map.of("role", "user", "content", prompt)));
 
-        Map<?, ?> response = restClient.post()
-                .uri("/v1/messages")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(request)
-                .retrieve()
-                .body(Map.class);
+        return extractText(post(request));
+    }
 
-        return extractText(response);
+    @Override
+    public ClaudeReply converse(String system, List<Map<String, Object>> messages, List<Map<String, Object>> tools) {
+        return toReply(post(toolRequest(model, toolMaxTokens, system, messages, tools)));
     }
 
     @Override
     public String mode() {
         return "real";
+    }
+
+    private Map<?, ?> post(Map<String, Object> request) {
+        return restClient.post()
+                .uri("/v1/messages")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .body(Map.class);
+    }
+
+    static Map<String, Object> toolRequest(String model, int maxTokens, String system,
+            List<Map<String, Object>> messages, List<Map<String, Object>> tools) {
+        return Map.of(
+                "model", model,
+                "max_tokens", maxTokens,
+                "system", system,
+                "tools", tools,
+                "messages", messages);
     }
 
     static String extractText(Map<?, ?> response) {
@@ -67,5 +89,21 @@ public class AnthropicClaudeClient implements ClaudeClient {
             }
         }
         return text.toString();
+    }
+
+    static ClaudeReply toReply(Map<?, ?> response) {
+        if (response == null || !(response.get("content") instanceof List<?> blocks)
+                || !(response.get("stop_reason") instanceof String stopReason)) {
+            throw new IllegalStateException("Réponse de l'API Claude inattendue");
+        }
+        List<Map<String, Object>> content = new ArrayList<>();
+        for (Object block : blocks) {
+            if (block instanceof Map<?, ?> map) {
+                Map<String, Object> copy = new LinkedHashMap<>();
+                map.forEach((key, value) -> copy.put(String.valueOf(key), value));
+                content.add(copy);
+            }
+        }
+        return new ClaudeReply(stopReason, content);
     }
 }
