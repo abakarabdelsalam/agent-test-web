@@ -1,0 +1,182 @@
+[
+  {
+    "id": "BUG-01",
+    "slug": "recherche-casse",
+    "spec": "SPEC-01",
+    "page": "Catalogue",
+    "severity": "majeure",
+    "description": "Chercher « casque » en minuscules ne trouve pas le Casque Bluetooth",
+    "file": "test-site/src/app/pages/catalog.ts"
+  },
+  {
+    "id": "BUG-02",
+    "slug": "tri-inverse",
+    "spec": "SPEC-02",
+    "page": "Catalogue",
+    "severity": "majeure",
+    "description": "Les tris par prix croissant et décroissant sont inversés",
+    "file": "test-site/src/app/pages/catalog.ts"
+  },
+  {
+    "id": "BUG-03",
+    "slug": "filtre-categorie",
+    "spec": "SPEC-03",
+    "page": "Catalogue",
+    "severity": "mineure",
+    "description": "Le filtre Audio affiche aussi le Câble Audio Jack, de la catégorie Accessoires",
+    "file": "test-site/src/app/pages/catalog.ts"
+  },
+  {
+    "id": "BUG-04",
+    "slug": "rupture-ajoutable",
+    "spec": "SPEC-04",
+    "page": "Catalogue",
+    "severity": "critique",
+    "description": "La Webcam Full HD en rupture de stock peut être ajoutée au panier depuis le catalogue",
+    "file": "test-site/src/app/pages/catalog.ts"
+  },
+  {
+    "id": "BUG-05",
+    "slug": "prix-different",
+    "spec": "SPEC-05",
+    "page": "Fiche produit",
+    "severity": "critique",
+    "description": "Le Clavier Mécanique coûte 79,90 € au catalogue et 89,90 € sur sa fiche",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-06",
+    "slug": "image-cassee",
+    "spec": "SPEC-06",
+    "page": "Catalogue",
+    "severity": "mineure",
+    "description": "L'image de l'Écran 27 pouces ne s'affiche pas",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-07",
+    "slug": "lien-contact",
+    "spec": "SPEC-07",
+    "page": "Navigation",
+    "severity": "mineure",
+    "description": "Le lien Contact du pied de page mène à une page introuvable",
+    "file": "test-site/src/app/app.ts"
+  },
+  {
+    "id": "BUG-08",
+    "slug": "quantite-negative",
+    "spec": "SPEC-08",
+    "page": "Panier",
+    "severity": "majeure",
+    "description": "La quantité peut descendre à 0 et en dessous",
+    "file": "test-site/src/app/pages/cart.ts"
+  },
+  {
+    "id": "BUG-09",
+    "slug": "sous-total-quantite",
+    "spec": "SPEC-09",
+    "page": "Panier",
+    "severity": "critique",
+    "description": "Le sous-total ignore les quantités",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-10",
+    "slug": "mauvaise-suppression",
+    "spec": "SPEC-10",
+    "page": "Panier",
+    "severity": "critique",
+    "description": "Retirer un produit supprime toujours la première ligne",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-11",
+    "slug": "promo-20",
+    "spec": "SPEC-11",
+    "page": "Panier",
+    "severity": "critique",
+    "description": "BIENVENUE10 donne 20 % de remise au lieu de 10 %",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-12",
+    "slug": "promo-sans-erreur",
+    "spec": "SPEC-12",
+    "page": "Panier",
+    "severity": "mineure",
+    "description": "Un code promo inconnu n'affiche aucun message",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-13",
+    "slug": "seuil-livraison",
+    "spec": "SPEC-13",
+    "page": "Panier",
+    "severity": "majeure",
+    "description": "La livraison n'est offerte qu'au-delà de 100 € au lieu de 50 €",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-14",
+    "slug": "compteur-faux",
+    "spec": "SPEC-14",
+    "page": "En-tête",
+    "severity": "mineure",
+    "description": "Le compteur du panier ne baisse pas après un retrait",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-15",
+    "slug": "email-commande",
+    "spec": "SPEC-15",
+    "page": "Commande",
+    "severity": "majeure",
+    "description": "Un e-mail sans @ est accepté à la commande",
+    "file": "test-site/src/app/pages/checkout.ts"
+  },
+  {
+    "id": "BUG-16",
+    "slug": "code-postal",
+    "spec": "SPEC-16",
+    "page": "Commande",
+    "severity": "majeure",
+    "description": "Un code postal contenant des lettres est accepté",
+    "file": "test-site/src/app/pages/checkout.ts"
+  },
+  {
+    "id": "BUG-17",
+    "slug": "total-sans-livraison",
+    "spec": "SPEC-17",
+    "page": "Confirmation",
+    "severity": "critique",
+    "description": "Le total confirmé n'inclut pas les frais de livraison",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-18",
+    "slug": "panier-non-vide",
+    "spec": "SPEC-18",
+    "page": "Confirmation",
+    "severity": "majeure",
+    "description": "Le panier reste rempli après la commande",
+    "file": "test-site/src/app/shop.ts"
+  },
+  {
+    "id": "BUG-19",
+    "slug": "mot-de-passe-court",
+    "spec": "SPEC-19",
+    "page": "Inscription",
+    "severity": "majeure",
+    "description": "Un mot de passe de 4 caractères est accepté",
+    "file": "test-site/src/app/pages/register.ts"
+  },
+  {
+    "id": "BUG-20",
+    "slug": "confirmation-mdp",
+    "spec": "SPEC-20",
+    "page": "Inscription",
+    "severity": "majeure",
+    "description": "Deux mots de passe différents sont acceptés",
+    "file": "test-site/src/app/pages/register.ts"
+  }
+]
