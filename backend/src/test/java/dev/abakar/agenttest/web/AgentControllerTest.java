@@ -2,6 +2,7 @@ package dev.abakar.agenttest.web;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -56,6 +57,8 @@ class AgentControllerTest {
         mvc.perform(post("/api/agent").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"url\":\"http://localhost:4200\",\"instruction\":\"Cherche casque\"}"))
                 .andExpect(status().isOk())
+                // PowerShell 5.1 lit les accents de travers si le charset n'est pas annoncé.
+                .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.endedBy").value("end_turn"))
                 .andExpect(jsonPath("$.actions.length()").value(4));
         assertTrue(session.closed);

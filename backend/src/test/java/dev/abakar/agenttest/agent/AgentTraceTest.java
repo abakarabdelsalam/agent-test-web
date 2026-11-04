@@ -41,7 +41,9 @@ class AgentTraceTest {
         String line = console.getFirst();
         assertTrue(line.contains("ERREUR Texte sur plusieurs lignes"));
         assertFalse(line.contains("\n"));
-        assertTrue(line.length() <= 161);
+        // "..." plutôt que "…", absent de l'encodage de la console Windows.
+        assertTrue(line.endsWith("..."));
+        assertTrue(line.length() <= 163);
     }
 
     @Test

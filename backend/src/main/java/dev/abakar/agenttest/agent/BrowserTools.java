@@ -114,9 +114,18 @@ public class BrowserTools {
         return value;
     }
 
-    private static String shorten(String message) {
-        String firstLine = message == null ? "Erreur inconnue" : message.lines().findFirst().orElse("Erreur inconnue");
-        return firstLine.length() > MAX_ERROR_CHARS ? firstLine.substring(0, MAX_ERROR_CHARS) + "…" : firstLine;
+    static String shorten(String message) {
+        if (message == null || message.isBlank()) {
+            return "Erreur inconnue";
+        }
+        // Playwright écrit "Error {" en première ligne : la vraie cause est sur la ligne message='...'.
+        String line = message.lines()
+                .map(String::strip)
+                .filter(candidate -> candidate.startsWith("message='"))
+                .map(candidate -> candidate.substring("message='".length()).replaceFirst("'$", ""))
+                .findFirst()
+                .orElse(message.lines().findFirst().orElse("Erreur inconnue"));
+        return line.length() > MAX_ERROR_CHARS ? line.substring(0, MAX_ERROR_CHARS) + "..." : line;
     }
 
     private static Map<String, Object> text(String description) {

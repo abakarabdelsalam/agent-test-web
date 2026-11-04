@@ -71,6 +71,19 @@ class BrowserToolsTest {
     }
 
     @Test
+    void keepsTheRealCauseOfAPlaywrightError() {
+        String playwright = """
+                Error {
+                  message='net::ERR_CONNECTION_REFUSED at http://localhost:4200/
+                Call log:
+                  - navigating to "http://localhost:4200/", waiting until "load"'
+                  name='Error'
+                }""";
+
+        assertEquals("net::ERR_CONNECTION_REFUSED at http://localhost:4200/", BrowserTools.shorten(playwright));
+    }
+
+    @Test
     void returnsCaptureAsImageBlock() {
         Map<String, Object> block = call("capture", Map.of()).toBlock("toolu_9");
 

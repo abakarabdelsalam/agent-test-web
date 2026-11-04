@@ -75,6 +75,6 @@ public class AgentTrace {
 
     static String summarize(String line) {
         String oneLine = API_KEY.matcher(line).replaceAll("[clé masquée]").replaceAll("\\s+", " ").strip();
-        return oneLine.length() > MAX_CHARS ? oneLine.substring(0, MAX_CHARS) + "…" : oneLine;
+        return oneLine.length() > MAX_CHARS ? oneLine.substring(0, MAX_CHARS) + "..." : oneLine;
     }
 }
