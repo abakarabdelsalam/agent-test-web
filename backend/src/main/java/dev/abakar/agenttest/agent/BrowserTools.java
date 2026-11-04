@@ -29,6 +29,9 @@ public class BrowserTools {
             tool("remplir", "Remplace le contenu d'un champ de saisie.",
                     Map.of("selecteur", text("Sélecteur donné par lire_page"), "texte", text("Texte à saisir")),
                     List.of("selecteur", "texte")),
+            tool("choisir", "Choisit une option dans une liste déroulante (select), par sa valeur ou son libellé.",
+                    Map.of("selecteur", text("Sélecteur donné par lire_page"), "option", text("Valeur ou libellé")),
+                    List.of("selecteur", "option")),
             tool("capture", "Prend une capture d'écran de la page.", Map.of(), List.of()),
             tool("signaler_bug", "Signale un écart prouvé entre la page et une exigence SPEC-xx.",
                     Map.of("spec", text("Exigence contredite, par exemple SPEC-01"),
@@ -63,6 +66,10 @@ public class BrowserTools {
                 case "remplir" -> {
                     session.fill(required(call, "selecteur"), required(call, "texte"));
                     yield ToolResult.ok("Champ rempli.");
+                }
+                case "choisir" -> {
+                    session.select(required(call, "selecteur"), required(call, "option"));
+                    yield ToolResult.ok("Option choisie.");
                 }
                 case "capture" -> ToolResult.image(session.capture());
                 case "signaler_bug" -> report(call);

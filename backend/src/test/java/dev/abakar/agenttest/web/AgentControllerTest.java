@@ -8,13 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import dev.abakar.agenttest.agent.AgentTrace;
-import dev.abakar.agenttest.agent.ToolLoop;
+import dev.abakar.agenttest.agent.TestLoops;
 import dev.abakar.agenttest.browser.AllowedSites;
 import dev.abakar.agenttest.browser.BrowserSession;
 import dev.abakar.agenttest.claude.FakeClaudeClient;
-import dev.abakar.agenttest.report.ReportValidator;
-import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,9 +24,7 @@ class AgentControllerTest {
     private final AllowedSites allowedSites = new AllowedSites(Set.of("localhost"));
 
     private final MockMvc mvc = MockMvcBuilders.standaloneSetup(new AgentController(allowedSites,
-            new ToolLoop(new FakeClaudeClient(), allowedSites,
-                    new ReportValidator(Validation.buildDefaultValidatorFactory().getValidator()),
-                    new AgentTrace(false)),
+            TestLoops.loop(new FakeClaudeClient()),
             () -> {
                 launched.incrementAndGet();
                 return session;
@@ -74,6 +69,7 @@ class AgentControllerTest {
         @Override public String readPage() { return "Catalogue"; }
         @Override public void click(String selector) { }
         @Override public void fill(String selector, String text) { }
+        @Override public void select(String selector, String option) { }
         @Override public byte[] capture() { return new byte[0]; }
         @Override public String currentUrl() { return url; }
         @Override public void close() { closed = true; }

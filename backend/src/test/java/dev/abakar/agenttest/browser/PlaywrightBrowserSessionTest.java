@@ -26,6 +26,9 @@ class PlaywrightBrowserSessionTest {
             <button data-testid="go" onclick="document.querySelector('h1').innerText =
                 'Résultat : ' + document.querySelector('input').value">Chercher</button>
             <a href="https://example.com/">Lien externe</a>
+            <select data-testid="sort" onchange="document.querySelector('h1').innerText = 'Tri : ' + this.value">
+              <option value="">Par défaut</option><option value="asc">Prix croissant</option>
+            </select>
             </body></html>
             """;
 
@@ -62,6 +65,9 @@ class PlaywrightBrowserSessionTest {
             session.fill("[data-testid=\"search\"]", "casque");
             session.click("[data-testid=\"go\"]");
             assertTrue(session.readPage().contains("Résultat : casque"));
+
+            session.select("[data-testid=\"sort\"]", "Prix croissant");
+            assertTrue(session.readPage().contains("Tri : asc"));
 
             byte[] png = session.capture();
             assertTrue(Arrays.equals(new byte[] {(byte) 0x89, 'P', 'N', 'G'}, Arrays.copyOf(png, 4)));

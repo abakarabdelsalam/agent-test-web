@@ -1,5 +1,6 @@
 package dev.abakar.agenttest.agent;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -48,14 +49,18 @@ public class AgentTrace {
                 + " -> " + (result.error() ? "ERREUR " : "") + result.text());
     }
 
-    public void stop(String endedBy, int actions) {
-        print("Arrêt après " + actions + " action(s) : " + reason(endedBy));
+    public void stop(String endedBy, int actions, double costUsd) {
+        print("Arrêt après " + actions + " action(s) : " + reason(endedBy)
+                + String.format(Locale.FRANCE, " (coût estimé : %.4f $)", costUsd));
     }
 
     static String reason(String endedBy) {
         return switch (endedBy) {
             case "end_turn" -> "le modèle a terminé";
             case "action_limit" -> "limite d'actions atteinte";
+            case "time_limit" -> "limite de durée atteinte";
+            case "budget_limit" -> "limite de budget atteinte";
+            case "api_error" -> "erreur de l'API";
             case "max_tokens" -> "réponse coupée par la limite de jetons";
             case "refusal" -> "le modèle a refusé la demande";
             default -> endedBy;

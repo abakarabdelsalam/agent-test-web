@@ -8,10 +8,19 @@ import java.util.stream.Collectors;
  * Une réponse de Claude lors d'une conversation avec outils.
  * Les blocs sont gardés bruts : on les renvoie tels quels à l'API au tour suivant.
  */
-public record ClaudeReply(String stopReason, List<Map<String, Object>> content) {
+public record ClaudeReply(String stopReason, List<Map<String, Object>> content, Usage usage) {
 
     public ClaudeReply {
         content = List.copyOf(content);
+    }
+
+    public ClaudeReply(String stopReason, List<Map<String, Object>> content) {
+        this(stopReason, content, Usage.NONE);
+    }
+
+    /** Jetons facturés pour cet appel : ce que le modèle a lu et ce qu'il a écrit. */
+    public record Usage(long inputTokens, long outputTokens) {
+        public static final Usage NONE = new Usage(0, 0);
     }
 
     /** Une action demandée par Claude, à exécuter par le code Java. */

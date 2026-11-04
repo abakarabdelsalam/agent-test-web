@@ -8,23 +8,24 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 
 - **Site de test TechShop** : boutique Angular contenant 20 bugs volontaires. Un script vérifie qu'ils se reproduisent tous dans un vrai navigateur (dernier résultat : 20/20).
 - **Exploration scriptée** (`/api/explore`) : Playwright ouvre le catalogue et applique 3 vérifications écrites à la main. Testé sur TechShop : 3 bugs trouvés. Un site non autorisé est refusé (403) et une requête sans URL est refusée (400).
-- **Agent avec appel d'outils** (`/api/agent`) : Claude choisit les actions et le code Java les exécute avec Playwright. L'agent dispose de 6 outils (ouvrir, lire la page, cliquer, remplir, capture d'écran, signaler un bug), limités à 5 actions par parcours.
+- **Agent avec appel d'outils** (`/api/agent`) : Claude choisit les actions et le code Java les exécute avec Playwright. L'agent dispose de 7 outils : ouvrir, lire la page, cliquer, remplir, choisir dans une liste, capture d'écran et signaler un bug. Les spécifications du site lui sont fournies dans sa consigne.
   - Vérifié en **mode simulé** : un scénario enregistré pilote un vrai Chromium sur TechShop.
   - **Le mode réel, avec l'API Claude, n'a pas encore été testé.**
 - **Garde-fous** :
+  - chaque parcours s'arrête à 20 actions, 3 minutes ou 0,05 $ de coût estimé, selon la première limite atteinte (réglable dans `application.properties`) ;
+  - le coût est calculé à partir des jetons indiqués par l'API et figure dans la réponse ;
+  - une erreur de l'API (clé invalide, crédit épuisé) arrête le parcours proprement ;
   - le navigateur n'ouvre que les hôtes autorisés, y compris après un clic sur un lien externe ;
   - tout outil inconnu est refusé ;
   - chaque bug signalé est validé avant d'entrer dans le rapport JSON ;
   - le contenu des pages est traité comme une donnée, jamais comme une instruction.
 - **Mode observation** (désactivé par défaut) : fenêtre Chromium visible, pause d'une seconde entre les actions et journal en français dans la console du backend.
-- **Tests** : 54 tests backend, tous réussis lors de la dernière exécution (`mvn clean test`).
+- **Tests** : 70 tests backend, tous réussis lors de la dernière exécution (`mvn clean test`).
 
 ## Prochaines étapes
 
 - Premier essai de l'agent en mode réel, sur un seul parcours, avec Claude Haiku.
-- Limites de durée et de budget pour un agent autonome.
 - Évaluation : mesure du nombre de bugs trouvés sur les 20, avec une seule commande.
-- Accès de l'agent aux spécifications pendant le test.
 
 ## Structure
 
@@ -102,7 +103,12 @@ Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/agent -ContentType
 
 La réponse contient :
 - les actions exécutées et leur résultat ;
-- la raison de l'arrêt dans `endedBy` : `end_turn` (Claude a terminé), `action_limit` (5 actions atteintes), `max_tokens` ou `refusal` ;
+- la raison de l'arrêt dans `endedBy` :
+  - `end_turn` : Claude a terminé ;
+  - `action_limit`, `time_limit` ou `budget_limit` : une limite a été atteinte ;
+  - `api_error` : l'API a renvoyé une erreur ;
+  - `max_tokens` ou `refusal` : la réponse a été coupée ou refusée ;
+- le coût estimé en dollars dans `costUsd` (0 en mode simulé) ;
 - le rapport de bugs validé.
 
 En mode simulé, le scénario enregistré est toujours le même : il ouvre http://localhost:4200 et cherche « casque », quelle que soit la consigne.
@@ -120,13 +126,13 @@ mvn spring-boot:run
 
 Puis lance l'agent comme ci-dessus.
 - Chromium s'ouvre dans une vraie fenêtre et attend une seconde avant chaque action.
-- La console du backend affiche chaque étape : numéro de l'action, outil choisi, paramètres, résultat résumé et raison de l'arrêt.
+- La console du backend affiche chaque étape : numéro de l'action, outil choisi, paramètres, résultat résumé, raison de l'arrêt et coût estimé.
 
 Exemple :
 
 ```text
-Action 3/5 : remplir {selecteur=[data-testid="search"], texte=casque} -> Champ rempli.
-Arrêt après 4 action(s) : le modèle a terminé
+Action 3/20 : remplir {selecteur=[data-testid="search"], texte=casque} -> Champ rempli.
+Arrêt après 4 action(s) : le modèle a terminé (coût estimé : 0,0000 $)
 ```
 
 Le journal n'affiche jamais la clé API ni les en-têtes d'authentification. Il ne contient que les actions de l'agent.

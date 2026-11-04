@@ -20,7 +20,7 @@ class AgentTraceTest {
 
         trace.start("http://localhost:4200", "Cherche casque");
         trace.action(1, 5, "lire_page", Map.of(), ToolResult.ok("Catalogue"));
-        trace.stop("end_turn", 1);
+        trace.stop("end_turn", 1, 0.001);
 
         assertTrue(console.isEmpty());
     }
@@ -57,5 +57,16 @@ class AgentTraceTest {
         assertEquals("limite d'actions atteinte", AgentTrace.reason("action_limit"));
         assertEquals("réponse coupée par la limite de jetons", AgentTrace.reason("max_tokens"));
         assertEquals("le modèle a refusé la demande", AgentTrace.reason("refusal"));
+        assertEquals("limite de durée atteinte", AgentTrace.reason("time_limit"));
+        assertEquals("limite de budget atteinte", AgentTrace.reason("budget_limit"));
+        assertEquals("erreur de l'API", AgentTrace.reason("api_error"));
+    }
+
+    @Test
+    void showsEstimatedCostWhenStopping() {
+        new AgentTrace(true, console::add).stop("budget_limit", 3, 0.0512);
+
+        assertEquals("Arrêt après 3 action(s) : limite de budget atteinte (coût estimé : 0,0512 $)",
+                console.getFirst());
     }
 }

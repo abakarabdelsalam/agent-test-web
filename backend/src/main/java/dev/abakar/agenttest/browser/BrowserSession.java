@@ -12,6 +12,9 @@ public interface BrowserSession extends AutoCloseable {
 
     void fill(String selector, String text);
 
+    /** Choisit une option d'une liste déroulante, par sa valeur ou son libellé. */
+    void select(String selector, String option);
+
     /** Capture d'écran au format PNG. */
     byte[] capture();
 

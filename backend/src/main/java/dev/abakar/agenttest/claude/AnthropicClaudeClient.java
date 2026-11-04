@@ -104,6 +104,17 @@ public class AnthropicClaudeClient implements ClaudeClient {
                 content.add(copy);
             }
         }
-        return new ClaudeReply(stopReason, content);
+        return new ClaudeReply(stopReason, content, toUsage(response.get("usage")));
+    }
+
+    private static ClaudeReply.Usage toUsage(Object usage) {
+        if (!(usage instanceof Map<?, ?> map)) {
+            return ClaudeReply.Usage.NONE;
+        }
+        return new ClaudeReply.Usage(tokens(map.get("input_tokens")), tokens(map.get("output_tokens")));
+    }
+
+    private static long tokens(Object value) {
+        return value instanceof Number number ? number.longValue() : 0;
     }
 }

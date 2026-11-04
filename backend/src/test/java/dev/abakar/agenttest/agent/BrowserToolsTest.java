@@ -110,6 +110,15 @@ class BrowserToolsTest {
     void definesExactlyThePlannedTools() {
         List<Object> names = BrowserTools.DEFINITIONS.stream().map(tool -> tool.get("name")).toList();
 
-        assertEquals(List.of("ouvrir", "lire_page", "cliquer", "remplir", "capture", "signaler_bug"), names);
+        assertEquals(List.of("ouvrir", "lire_page", "cliquer", "remplir", "choisir", "capture", "signaler_bug"),
+                names);
+    }
+
+    @Test
+    void choosesOptionInDropDown() {
+        ToolResult result = call("choisir", Map.of("selecteur", "[data-testid=\"sort\"]", "option", "asc"));
+
+        assertFalse(result.error());
+        assertEquals(List.of("select [data-testid=\"sort\"] asc"), session.calls);
     }
 }

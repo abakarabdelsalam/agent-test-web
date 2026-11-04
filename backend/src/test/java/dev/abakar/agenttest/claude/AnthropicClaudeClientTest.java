@@ -56,6 +56,15 @@ class AnthropicClaudeClientTest {
 
         assertEquals("tool_use", reply.stopReason());
         assertEquals("lire_page", reply.toolCalls().getFirst().name());
+        assertEquals(ClaudeReply.Usage.NONE, reply.usage());
+    }
+
+    @Test
+    void readsTokenUsage() {
+        Map<String, Object> response = Map.of("stop_reason", "end_turn", "content", List.of(),
+                "usage", Map.of("input_tokens", 1200, "output_tokens", 85));
+
+        assertEquals(new ClaudeReply.Usage(1200, 85), AnthropicClaudeClient.toReply(response).usage());
     }
 
     @Test

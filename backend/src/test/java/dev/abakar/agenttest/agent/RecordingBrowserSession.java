@@ -38,6 +38,11 @@ class RecordingBrowserSession implements BrowserSession {
     }
 
     @Override
+    public void select(String selector, String option) {
+        calls.add("select " + selector + " " + option);
+    }
+
+    @Override
     public byte[] capture() {
         calls.add("capture");
         return new byte[2048];

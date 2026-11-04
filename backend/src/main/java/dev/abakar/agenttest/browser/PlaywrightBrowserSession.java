@@ -114,6 +114,13 @@ public class PlaywrightBrowserSession implements BrowserSession {
     }
 
     @Override
+    public void select(String selector, String option) {
+        pauseForObserver();
+        page.locator(selector).first().selectOption(option);
+        settle();
+    }
+
+    @Override
     public byte[] capture() {
         pauseForObserver();
         return page.screenshot();
