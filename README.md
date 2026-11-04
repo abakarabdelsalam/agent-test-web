@@ -20,7 +20,7 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
   - chaque bug signalé est validé avant d'entrer dans le rapport JSON ;
   - le contenu des pages est traité comme une donnée, jamais comme une instruction.
 - **Mode observation** (désactivé par défaut) : fenêtre Chromium visible, pause d'une seconde entre les actions et journal en français dans la console du backend.
-- **Tests** : 70 tests backend, tous réussis lors de la dernière exécution (`mvn clean test`).
+- **Tests** : 73 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
 
 ## Prochaines étapes
 
@@ -69,7 +69,7 @@ Résultat attendu : `20/20 bugs reproduits`.
 
 ## Lancer le backend sans frais
 
-Par défaut, le backend utilise des réponses simulées et n'appelle pas l'API Claude.
+Par défaut, le backend utilise des réponses simulées et n'appelle pas l'API Claude. Au démarrage, la console indique le mode actif : `Mode Claude : simulé, aucun appel à l'API.` ou `Mode Claude : réel (claude-haiku-5-5), chaque appel consomme du crédit API.`
 
 ```powershell
 cd backend

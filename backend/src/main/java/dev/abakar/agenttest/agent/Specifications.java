@@ -7,6 +7,7 @@ import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,13 @@ public class Specifications {
 
     private final String text;
 
-    public Specifications(@Value("${agent.specs-path}") Path path) {
+    // Spring reçoit un texte : converti par lui en Path, "../" serait lu comme une ressource web et refusé.
+    @Autowired
+    public Specifications(@Value("${agent.specs-path}") String path) {
+        this(Path.of(path));
+    }
+
+    Specifications(Path path) {
         this.text = read(path);
     }
 
