@@ -11,3 +11,4 @@ target/
 CLAUDE.md
 docs/
 .claude/
+evaluation/resultats.json

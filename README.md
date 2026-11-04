@@ -10,10 +10,7 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 - **Exploration scriptée** (`/api/explore`) : Playwright ouvre le catalogue et applique 3 vérifications écrites à la main. Testé sur TechShop : 3 bugs trouvés. Un site non autorisé est refusé (403) et une requête sans URL est refusée (400).
 - **Agent avec appel d'outils** (`/api/agent`) : Claude choisit les actions et le code Java les exécute avec Playwright. L'agent dispose de 7 outils : ouvrir, lire la page, cliquer, remplir, choisir dans une liste, capture d'écran et signaler un bug. Les spécifications du site lui sont fournies dans sa consigne.
   - Vérifié en **mode simulé** : un scénario enregistré pilote un vrai Chromium sur TechShop.
-  - Premier essai en **mode réel** avec Claude Haiku 5.5, limité à 5 actions : 2 parcours pour environ 0,0023 $ au total.
-    - Site arrêté : l'agent a réessayé une fois, puis a expliqué qu'il ne pouvait pas tester, sans inventer de bug.
-    - Site lancé : l'agent a ouvert TechShop, cherché « casque », remarqué qu'aucun produit ne s'affichait alors que « Casque Bluetooth » existe, et commencé à vérifier la casse. La limite de 5 actions l'a arrêté avant qu'il signale le bug.
-  - Le score sur les 20 bugs n'a pas encore été mesuré.
+  - Testé en **mode réel** avec Claude Haiku 5.5 : l'agent termine un parcours seul, et les limites l'arrêtent si besoin. Un parcours complet coûte moins de 0,01 $.
 - **Garde-fous** :
   - chaque parcours s'arrête à 20 actions, 3 minutes ou 0,05 $ de coût estimé, selon la première limite atteinte (réglable dans `application.properties`) ;
   - le coût est calculé à partir des jetons indiqués par l'API et figure dans la réponse ;
@@ -27,8 +24,7 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 
 ## Prochaines étapes
 
-- Essai en mode réel avec la limite normale de 20 actions, pour que l'agent aille jusqu'au signalement des bugs.
-- Évaluation : mesure du nombre de bugs trouvés sur les 20, avec une seule commande.
+- Premier score mesuré sur les 20 bugs, avec la commande d'évaluation.
 
 ## Structure
 
@@ -115,6 +111,18 @@ La réponse contient :
 - le rapport de bugs validé.
 
 En mode simulé, le scénario enregistré est toujours le même : il ouvre http://localhost:4200 et cherche « casque », quelle que soit la consigne.
+
+## Mesurer le score
+
+Lance le site de test et le backend, puis, dans le dossier `evaluation` :
+
+```powershell
+cd evaluation
+npm install
+npm run evaluate
+```
+
+La commande lance l'agent sur TechShop, compare ses bugs au corrigé et affiche le nombre de bugs trouvés. Le détail est enregistré dans `evaluation/resultats.json`, qui n'est pas versionné. Si le backend tourne en mode simulé, la commande le signale : le score n'est alors pas significatif.
 
 ## Observer l'agent
 
