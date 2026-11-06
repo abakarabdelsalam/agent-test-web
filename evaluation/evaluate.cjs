@@ -23,15 +23,25 @@ function score(bugs, report) {
     };
 }
 
+// « fetch failed » ne dit pas quoi faire : on explique que le backend ne répond pas.
+function unreachableMessage(url) {
+    return `Le backend ne répond pas sur ${url}. Lance-le avec « mvn spring-boot:run » dans le dossier backend, puis relance cette commande.`;
+}
+
 async function run() {
     const bugs = JSON.parse(fs.readFileSync(path.join(__dirname, 'bugs.json'), 'utf8'));
-    const response = await fetch(AGENT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ url: SITE_URL, instruction: INSTRUCTION }),
-    });
+    let response;
+    try {
+        response = await fetch(AGENT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            body: JSON.stringify({ url: SITE_URL, instruction: INSTRUCTION }),
+        });
+    } catch {
+        throw new Error(unreachableMessage(AGENT_URL));
+    }
     if (!response.ok) {
-        throw new Error(`Le backend a répondu ${response.status}. Vérifie qu'il tourne sur le port 8080.`);
+        throw new Error(`Le backend a répondu ${response.status}. Vérifie l'URL et les logs du backend.`);
     }
     const run = await response.json();
     const result = score(bugs, run.report);
@@ -39,6 +49,8 @@ async function run() {
     if (run.costUsd === 0) {
         console.log('⚠ Coût nul : le backend tourne en mode simulé. Ce n\'est pas un score réel.');
     }
+    console.log('Bugs signalés par l\'agent :');
+    run.report.bugs.forEach((bug) => console.log(`  - ${bug.spec} : ${bug.title}`));
     console.log(`Bugs trouvés : ${result.found}/${result.total}`);
     console.log(`Fausses alertes : ${result.falseAlerts}`);
     console.log(`Non trouvés : ${result.missed.join(', ') || 'aucun'}`);
@@ -52,4 +64,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { score };
+module.exports = { score, unreachableMessage };

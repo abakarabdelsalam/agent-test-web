@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { score } = require('./evaluate.cjs');
+const { score, unreachableMessage } = require('./evaluate.cjs');
 
 const BUGS = [
     { id: 'BUG-01', spec: 'SPEC-01' },
@@ -28,6 +28,13 @@ test('compte comme fausse alerte un bug signalé deux fois', () => {
 
     assert.equal(result.found, 1);
     assert.equal(result.falseAlerts, 1);
+});
+
+test('explique comment relancer le backend quand il ne répond pas', () => {
+    const message = unreachableMessage('http://localhost:8080/api/agent');
+
+    assert.match(message, /mvn spring-boot:run/);
+    assert.match(message, /localhost:8080/);
 });
 
 test('ne trouve rien sans rapport', () => {
