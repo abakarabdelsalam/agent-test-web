@@ -61,15 +61,15 @@ public class BrowserTools {
                 case "lire_page" -> ToolResult.ok(session.readPage());
                 case "cliquer" -> {
                     session.click(required(call, "selecteur"));
-                    yield ToolResult.ok("Clic effectué. URL actuelle : " + session.currentUrl());
+                    yield afterAction("Clic effectué. URL actuelle : " + session.currentUrl());
                 }
                 case "remplir" -> {
                     session.fill(required(call, "selecteur"), required(call, "texte"));
-                    yield ToolResult.ok("Champ rempli.");
+                    yield afterAction("Champ rempli.");
                 }
                 case "choisir" -> {
                     session.select(required(call, "selecteur"), required(call, "option"));
-                    yield ToolResult.ok("Option choisie.");
+                    yield afterAction("Option choisie.");
                 }
                 case "capture" -> ToolResult.image(session.capture());
                 case "signaler_bug" -> report(call);
@@ -82,6 +82,11 @@ public class BrowserTools {
 
     public List<BugReport> bugs() {
         return List.copyOf(bugs);
+    }
+
+    // L'état de la page part avec le résultat : Claude n'a pas besoin de gaspiller une action sur lire_page.
+    private ToolResult afterAction(String message) {
+        return ToolResult.ok(message + "\n\n" + session.readPage());
     }
 
     private ToolResult open(String url) {

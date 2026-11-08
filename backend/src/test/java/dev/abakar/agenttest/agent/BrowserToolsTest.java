@@ -59,7 +59,16 @@ class BrowserToolsTest {
         call("remplir", Map.of("selecteur", "[data-testid=\"search\"]", "texte", "casque"));
         call("cliquer", Map.of("selecteur", "text=Panier"));
 
-        assertEquals(List.of("read", "fill [data-testid=\"search\"] casque", "click text=Panier"), session.calls);
+        assertEquals(List.of("read", "fill [data-testid=\"search\"] casque", "read", "click text=Panier", "read"),
+                session.calls);
+    }
+
+    @Test
+    void actionResultCarriesThePageSoNoExtraReadIsNeeded() {
+        ToolResult result = call("remplir", Map.of("selecteur", "[data-testid=\"search\"]", "texte", "casque"));
+
+        assertTrue(result.text().startsWith("Champ rempli."));
+        assertTrue(result.text().contains("Texte visible :\nCatalogue"));
     }
 
     @Test
@@ -132,6 +141,6 @@ class BrowserToolsTest {
         ToolResult result = call("choisir", Map.of("selecteur", "[data-testid=\"sort\"]", "option", "asc"));
 
         assertFalse(result.error());
-        assertEquals(List.of("select [data-testid=\"sort\"] asc"), session.calls);
+        assertEquals(List.of("select [data-testid=\"sort\"] asc", "read"), session.calls);
     }
 }
