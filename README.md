@@ -11,6 +11,7 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 - **Agent avec appel d'outils** (`/api/agent`) : Claude choisit les actions et le code Java les exécute avec Playwright. L'agent dispose de 7 outils : ouvrir, lire la page, cliquer, remplir, choisir dans une liste, capture d'écran et signaler un bug. Les spécifications du site lui sont fournies dans sa consigne.
   - Vérifié en **mode simulé** : un scénario enregistré pilote un vrai Chromium sur TechShop.
   - Testé en **mode réel** avec Claude Haiku 5.5 : l'agent termine un parcours seul, et les limites l'arrêtent si besoin. Un parcours complet coûte moins de 0,01 $.
+  - Premier score mesuré sur les 20 bugs : **3 bugs trouvés, 0 fausse alerte**, avec 20 actions (un seul essai, pour environ 0,011 $). Les autres bugs n'ont pas été atteints avant la limite.
 - **Garde-fous** :
   - chaque parcours s'arrête à 20 actions, 3 minutes ou 0,05 $ de coût estimé, selon la première limite atteinte (réglable dans `application.properties`) ;
   - le coût est calculé à partir des jetons indiqués par l'API et figure dans la réponse ;
@@ -24,7 +25,7 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 
 ## Prochaines étapes
 
-- Premier score mesuré sur les 20 bugs, avec la commande d'évaluation.
+- Améliorer le score : le premier essai a trouvé 3 bugs sur 20, sans fausse alerte, avec la limite de 20 actions. Reste à savoir si une limite plus haute en trouve davantage.
 
 ## Structure
 
