@@ -1,14 +1,18 @@
 package dev.abakar.agenttest.web;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import dev.abakar.agenttest.agent.AgentRun;
 import dev.abakar.agenttest.agent.TestLoops;
 import dev.abakar.agenttest.browser.AllowedSites;
 import dev.abakar.agenttest.browser.BrowserSession;
@@ -23,9 +27,11 @@ class AgentControllerTest {
     private final AtomicInteger launched = new AtomicInteger();
     private final StubSession session = new StubSession();
     private final AllowedSites allowedSites = new AllowedSites(Set.of("localhost"));
+    private final List<AgentRun> recorded = new ArrayList<>();
 
     private final MockMvc mvc = MockMvcBuilders.standaloneSetup(new AgentController(allowedSites,
             TestLoops.loop(new FakeClaudeClient()),
+            (site, run) -> recorded.add(run),
             () -> {
                 launched.incrementAndGet();
                 return session;
@@ -62,6 +68,15 @@ class AgentControllerTest {
                 .andExpect(jsonPath("$.endedBy").value("end_turn"))
                 .andExpect(jsonPath("$.actions.length()").value(4));
         assertTrue(session.closed);
+    }
+
+    @Test
+    void recordsEachFinishedRun() throws Exception {
+        mvc.perform(post("/api/agent").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"url\":\"http://localhost:4200\",\"instruction\":\"Cherche casque\"}"))
+                .andExpect(status().isOk());
+
+        assertEquals(1, recorded.size());
     }
 
     private static class StubSession implements BrowserSession {

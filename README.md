@@ -24,7 +24,8 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
   - chaque bug signalé est validé avant d'entrer dans le rapport JSON ;
   - le contenu des pages est traité comme une donnée, jamais comme une instruction.
 - **Mode observation** (désactivé par défaut) : fenêtre Chromium visible, pause d'une seconde entre les actions et journal en français dans la console du backend.
-- **Tests** : 74 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
+- **Historique** : chaque parcours est enregistré dans PostgreSQL, avec ses bugs. Chaque bug peut être validé ou rejeté par l'API.
+- **Tests** : 79 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
 
 ## Prochaines étapes
 
@@ -74,17 +75,39 @@ Résultat attendu : `20/20 bugs reproduits`.
 
 Par défaut, le backend utilise des réponses simulées et n'appelle pas l'API Claude. Au démarrage, la console indique le mode actif : `Mode Claude : simulé, aucun appel à l'API.` ou `Mode Claude : réel (claude-haiku-5-5), chaque appel consomme du crédit API.`
 
+Le backend enregistre l'historique dans PostgreSQL. Lance d'abord la base, avec Docker Desktop ouvert :
+
 ```powershell
+docker compose up -d
 cd backend
 mvn test
 mvn spring-boot:run
 ```
+
+Les tests n'ont pas besoin de PostgreSQL : ils utilisent une base H2 en mémoire.
 
 Dans un second terminal :
 
 ```powershell
 Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/ask -ContentType "application/json; charset=utf-8" -Body '{"prompt":"Bonjour"}'
 ```
+
+## Historique et validation des bugs
+
+Chaque parcours de l'agent est enregistré avec ses bugs, dans PostgreSQL. Une personne peut ensuite valider ou rejeter chaque bug.
+
+```powershell
+# Lister les parcours
+Invoke-RestMethod -Uri http://localhost:8080/api/runs | ConvertTo-Json -Depth 4
+
+# Voir un parcours et ses bugs (remplace 1 par l'identifiant voulu)
+Invoke-RestMethod -Uri http://localhost:8080/api/runs/1 | ConvertTo-Json -Depth 6
+
+# Valider un bug (remplace 3 par l'identifiant du bug ; statut : VALIDE, REJETE ou EN_ATTENTE)
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/bugs/3/validation -ContentType "application/json" -Body '{"statut":"VALIDE"}'
+```
+
+Un bug démarre en `EN_ATTENTE`. Tant qu'il n'est pas validé, il ne doit pas être compté comme un vrai bug.
 
 ## Explorer le catalogue
 

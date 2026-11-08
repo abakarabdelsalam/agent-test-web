@@ -1,0 +1,15 @@
+# Base PostgreSQL locale pour l'historique des parcours. Lancer avec : docker compose up -d
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: agent
+      POSTGRES_USER: agent
+      POSTGRES_PASSWORD: agent
+    ports:
+      - "5432:5432"
+    volumes:
+      - agent-pgdata:/var/lib/postgresql/data
+
+volumes:
+  agent-pgdata:

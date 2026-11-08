@@ -7,6 +7,7 @@ import dev.abakar.agenttest.agent.ToolLoop;
 import dev.abakar.agenttest.browser.AllowedSites;
 import dev.abakar.agenttest.browser.BrowserSession;
 import dev.abakar.agenttest.browser.PlaywrightBrowserSession;
+import dev.abakar.agenttest.history.RunRecorder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -24,17 +25,20 @@ public class AgentController {
 
     private final AllowedSites allowedSites;
     private final ToolLoop loop;
+    private final RunRecorder recorder;
     private final Supplier<BrowserSession> browsers;
 
     @Autowired
-    public AgentController(AllowedSites allowedSites, ToolLoop loop, @Value("${agent.headed}") boolean headed) {
-        this(allowedSites, loop, () -> new PlaywrightBrowserSession(allowedSites, headed));
+    public AgentController(AllowedSites allowedSites, ToolLoop loop, RunRecorder recorder,
+            @Value("${agent.headed}") boolean headed) {
+        this(allowedSites, loop, recorder, () -> new PlaywrightBrowserSession(allowedSites, headed));
     }
 
     // Les tests passent un faux navigateur pour ne pas lancer Chromium.
-    AgentController(AllowedSites allowedSites, ToolLoop loop, Supplier<BrowserSession> browsers) {
+    AgentController(AllowedSites allowedSites, ToolLoop loop, RunRecorder recorder, Supplier<BrowserSession> browsers) {
         this.allowedSites = allowedSites;
         this.loop = loop;
+        this.recorder = recorder;
         this.browsers = browsers;
     }
 
@@ -46,9 +50,13 @@ public class AgentController {
         if (!allowedSites.allows(request.url())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Site non autorisé");
         }
+        AgentRun run;
         try (BrowserSession session = browsers.get()) {
-            return loop.run(session, request.url(), request.instruction());
+            run = loop.run(session, request.url(), request.instruction());
         }
+        // Chaque parcours terminé est gardé, même sans bug : l'historique sert aussi à comparer les essais.
+        recorder.record(request.url(), run);
+        return run;
     }
 
     private static boolean isBlank(String value) {
