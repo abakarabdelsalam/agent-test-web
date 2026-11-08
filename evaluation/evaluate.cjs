@@ -46,7 +46,10 @@ async function run() {
     const run = await response.json();
     const result = score(bugs, run.report);
     console.log(`Arrêt : ${run.endedBy} | actions : ${run.actions.length} | coût : ${run.costUsd.toFixed(4)} $`);
-    if (run.costUsd === 0) {
+    // Une erreur de l'API ne coûte rien, comme le mode simulé : on distingue les deux cas.
+    if (run.endedBy === 'api_error') {
+        console.log('⚠ L\'API a renvoyé une erreur : vérifie la clé et le crédit, puis le journal du backend.');
+    } else if (run.costUsd === 0) {
         console.log('⚠ Coût nul : le backend tourne en mode simulé. Ce n\'est pas un score réel.');
     }
     console.log('Bugs signalés par l\'agent :');
