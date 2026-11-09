@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Historique de l'agent de test</title>
+<style>
+  :root { --bg: #f6f5f1; --panel: #fff; --fg: #1d1f24; --muted: #5d6270; --line: #d6d6cf; --accent: #2b59c3; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15171c; --panel: #1d2028; --fg: #ecedf0; --muted: #a3a8b5; --line: #353a46; --accent: #8fb0ff; }
+  }
+  body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 16px; }
+  h2 { font-size: 17px; margin: 24px 0 8px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover { background: var(--bg); }
+  .muted { color: var(--muted); }
+  .bug { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+  button { font: inherit; padding: 4px 10px; margin-right: 6px; border: 1px solid var(--accent); background: transparent; color: var(--accent); border-radius: 6px; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  .status { font-size: 13px; color: var(--muted); }
+  pre { white-space: pre-wrap; word-break: break-word; font-size: 13px; margin: 0; }
+  #message { color: var(--accent); min-height: 1.5em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Historique de l'agent de test</h1>
+  <p id="message" role="status"></p>
+
+  <section>
+    <h2>Parcours</h2>
+    <table>
+      <thead><tr><th>N°</th><th>Site</th><th>Consigne</th><th>Arrêt</th><th>Coût</th><th>Bugs</th></tr></thead>
+      <tbody id="runs"></tbody>
+    </table>
+  </section>
+
+  <section id="detail" hidden>
+    <h2 id="detail-title"></h2>
+    <p class="muted" id="detail-meta"></p>
+    <h2>Bugs signalés</h2>
+    <div id="bugs"></div>
+    <h2>Actions</h2>
+    <table>
+      <thead><tr><th>#</th><th>Outil</th><th>Paramètres</th><th>Résultat</th></tr></thead>
+      <tbody id="actions"></tbody>
+    </table>
+  </section>
+</main>
+<script>
+  // Les contenus viennent de l'agent et des sites testés : on les affiche comme du texte, jamais comme du HTML.
+  const message = (text) => { document.getElementById('message').textContent = text; };
+  const cell = (text) => { const td = document.createElement('td'); td.textContent = text; return td; };
+  let currentId = null;
+
+  async function api(path, options) {
+    const response = await fetch(path, options);
+    if (!response.ok) throw new Error('Erreur ' + response.status + ' sur ' + path);
+    return response.json();
+  }
+
+  async function loadRuns() {
+    try {
+      const runs = await api('/api/runs');
+      const body = document.getElementById('runs');
+      body.replaceChildren();
+      for (const run of runs) {
+        const row = document.createElement('tr');
+        row.className = 'clickable';
+        row.append(cell(run.id), cell(run.site), cell(run.instruction), cell(run.endedBy),
+          cell(run.costUsd.toFixed(4) + ' $'), cell(run.bugCount));
+        row.addEventListener('click', () => showRun(run.id));
+        body.append(row);
+      }
+      message(runs.length ? '' : 'Aucun parcours enregistré pour le moment.');
+    } catch (error) {
+      message(error.message);
+    }
+  }
+
+  async function showRun(id) {
+    try {
+      const run = await api('/api/runs/' + id);
+      currentId = id;
+      document.getElementById('detail').hidden = false;
+      document.getElementById('detail-title').textContent = 'Parcours ' + run.id;
+      document.getElementById('detail-meta').textContent =
+        run.site + ' · arrêt : ' + run.endedBy + ' · ' + run.actionCount + ' action(s) · ' + run.costUsd.toFixed(4) + ' $';
+      renderBugs(run.bugs);
+      renderActions(run.actions);
+    } catch (error) {
+      message(error.message);
+    }
+  }
+
+  function renderBugs(bugs) {
+    const container = document.getElementById('bugs');
+    container.replaceChildren();
+    if (bugs.length === 0) {
+      container.textContent = 'Aucun bug signalé pour ce parcours.';
+      return;
+    }
+    for (const bug of bugs) {
+      const box = document.createElement('div');
+      box.className = 'bug';
+      const title = document.createElement('strong');
+      title.textContent = bug.spec + ' · ' + bug.severity + ' · ' + bug.title;
+      const status = document.createElement('div');
+      status.className = 'status';
+      status.textContent = 'Statut : ' + bug.status;
+      const expected = document.createElement('p');
+      expected.textContent = 'Attendu : ' + bug.expected;
+      const actual = document.createElement('p');
+      actual.textContent = 'Constaté : ' + bug.actual;
+      const actions = document.createElement('div');
+      for (const [label, statut] of [['Valider', 'VALIDE'], ['Rejeter', 'REJETE']]) {
+        const button = document.createElement('button');
+        button.textContent = label;
+        button.disabled = bug.status === statut;
+        button.addEventListener('click', () => validate(bug.id, statut));
+        actions.append(button);
+      }
+      box.append(title, status, expected, actual, actions);
+      container.append(box);
+    }
+  }
+
+  function renderActions(actions) {
+    const body = document.getElementById('actions');
+    body.replaceChildren();
+    for (const action of actions) {
+      const row = document.createElement('tr');
+      const result = cell(action.result);
+      if (action.error) result.style.color = 'var(--accent)';
+      row.append(cell(action.position + 1), cell(action.tool), cell(action.input), result);
+      body.append(row);
+    }
+  }
+
+  async function validate(bugId, statut) {
+    try {
+      await api('/api/bugs/' + bugId + '/validation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statut })
+      });
+      message('Bug ' + statut.toLowerCase() + '.');
+      await showRun(currentId);
+    } catch (error) {
+      message(error.message);
+    }
+  }
+
+  loadRuns();
+</script>
+</body>
+</html>
