@@ -128,6 +128,40 @@ class ToolLoopTest {
     }
 
     @Test
+    void keepsOnlyTheBugsConfirmedByTheVerifier() {
+        assertTrue(runWithVerdict("REJETÉ : le comportement est voulu.").report().bugs().isEmpty());
+        assertEquals(1, runWithVerdict("CONFIRMÉ : la liste reste vide.").report().bugs().size());
+    }
+
+    // Le testeur signale un bug puis termine ; le vérificateur répond selon le verdict donné.
+    private AgentRun runWithVerdict(String verdict) {
+        List<ClaudeReply> tester = new ArrayList<>(List.of(
+                ClaudeReply.toolUse("toolu_bug", "signaler_bug", Map.of(
+                        "spec", "SPEC-01", "title", "Recherche sensible à la casse",
+                        "expected", "« casque » trouve le casque", "actual", "aucun résultat",
+                        "severity", "MAJEURE", "steps", List.of("Chercher casque"))),
+                ClaudeReply.endTurn("Fini.")));
+        ClaudeClient claude = new ClaudeClient() {
+            @Override
+            public ClaudeReply converse(String system, List<Map<String, Object>> messages,
+                    List<Map<String, Object>> tools) {
+                return BugVerifier.SYSTEM.equals(system) ? ClaudeReply.endTurn(verdict) : tester.removeFirst();
+            }
+
+            @Override
+            public String ask(String prompt) {
+                return "";
+            }
+
+            @Override
+            public String mode() {
+                return "fake";
+            }
+        };
+        return loopWith(claude).run(session, URL, "Vérifie la recherche");
+    }
+
+    @Test
     void asksForAScreenshotWhenTheTextIsNotEnough() {
         List<String> systems = new ArrayList<>();
         ClaudeClient recording = new FakeClaudeClient(List.of(ClaudeReply.endTurn("Fini."))) {

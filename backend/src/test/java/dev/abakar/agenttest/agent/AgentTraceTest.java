@@ -65,6 +65,13 @@ class AgentTraceTest {
     }
 
     @Test
+    void printsTheVerdictOfTheVerifier() {
+        new AgentTrace(true, console::add).verdict("SPEC-01", false, "le comportement est voulu");
+
+        assertEquals("Vérification SPEC-01 : rejeté (le comportement est voulu)", console.getFirst());
+    }
+
+    @Test
     void showsEstimatedCostWhenStopping() {
         new AgentTrace(true, console::add).stop("budget_limit", 3, 0.0512);
 

@@ -11,10 +11,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.abakar.agenttest.browser.AllowedSites;
+import dev.abakar.agenttest.claude.ClaudeReply.Usage;
 import dev.abakar.agenttest.browser.BrowserSession;
 import dev.abakar.agenttest.claude.ClaudeClient;
 import dev.abakar.agenttest.claude.ClaudeReply;
 import dev.abakar.agenttest.claude.ClaudeReply.ToolCall;
+import dev.abakar.agenttest.report.BugReport;
 import dev.abakar.agenttest.report.ReportValidator;
 import dev.abakar.agenttest.report.RunReport;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,13 +59,16 @@ public class ToolLoop {
     private final SpecificationIndex index;
     private final Clock clock;
     private final KnownFindings known;
+    private final BugVerifier verifier;
 
     private static final String SEARCH_TOOL = "chercher_specification";
     private static final int SEARCH_LIMIT = 3;
+    private static final int MAX_EVIDENCE_CHARS = 8000;
 
     @Autowired
     public ToolLoop(ClaudeClient claude, AllowedSites allowedSites, ReportValidator validator, AgentTrace trace,
-            AgentLimits limits, Pricing pricing, Specifications specifications, Clock clock, KnownFindings known) {
+            AgentLimits limits, Pricing pricing, Specifications specifications, Clock clock, KnownFindings known,
+            BugVerifier verifier) {
         this.claude = claude;
         this.allowedSites = allowedSites;
         this.validator = validator;
@@ -73,6 +78,7 @@ public class ToolLoop {
         this.index = new SpecificationIndex(specifications.text());
         this.clock = clock;
         this.known = known;
+        this.verifier = verifier;
     }
 
     public AgentRun run(BrowserSession session, String url, String instruction) {
@@ -170,9 +176,37 @@ public class ToolLoop {
 
     private AgentRun finish(String instruction, String endedBy, String finalText,
             List<AgentRun.Action> actions, String url, BrowserTools tools, double cost) {
-        trace.stop(endedBy, actions.size(), cost);
+        // Le vérificateur revoit chaque bug : seul un bug confirmé entre dans le rapport.
+        List<BugReport> confirmed = new ArrayList<>();
+        double total = cost;
+        for (BugReport bug : tools.bugs()) {
+            BugVerifier.Verdict verdict = verify(bug, actions);
+            total += pricing.cost(verdict.usage());
+            trace.verdict(bug.spec(), verdict.confirmed(), verdict.reason());
+            if (verdict.confirmed()) {
+                confirmed.add(bug);
+            }
+        }
+        trace.stop(endedBy, actions.size(), total);
         // Aucun rapport ne sort sans passer par le validateur.
-        RunReport report = validator.validate(new RunReport(url, tools.bugs()));
-        return new AgentRun(instruction, endedBy, finalText, cost, List.copyOf(actions), report);
+        RunReport report = validator.validate(new RunReport(url, confirmed));
+        return new AgentRun(instruction, endedBy, finalText, total, List.copyOf(actions), report);
+    }
+
+    // Si l'appel de vérification échoue, le bug est rejeté : on préfère un doute à une fausse alerte.
+    private BugVerifier.Verdict verify(BugReport bug, List<AgentRun.Action> actions) {
+        try {
+            return verifier.verify(bug, evidence(actions));
+        } catch (RestClientException e) {
+            return new BugVerifier.Verdict(false, "vérification impossible", Usage.NONE);
+        }
+    }
+
+    // Les dernières observations suffisent à prouver un bug ; on coupe l'historique trop long.
+    private static String evidence(List<AgentRun.Action> actions) {
+        String text = actions.stream()
+                .map(action -> action.tool() + " " + action.input() + " -> " + action.result())
+                .collect(Collectors.joining("\n"));
+        return text.length() > MAX_EVIDENCE_CHARS ? text.substring(text.length() - MAX_EVIDENCE_CHARS) : text;
     }
 }

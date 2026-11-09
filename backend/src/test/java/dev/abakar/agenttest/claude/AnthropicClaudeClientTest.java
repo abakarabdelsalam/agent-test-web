@@ -1,6 +1,7 @@
 package dev.abakar.agenttest.claude;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -45,6 +46,14 @@ class AnthropicClaudeClientTest {
         assertEquals(4096, request.get("max_tokens"));
         assertEquals("Système", request.get("system"));
         assertEquals(1, ((List<?>) request.get("tools")).size());
+    }
+
+    @Test
+    void omitsToolsWhenThereAreNone() {
+        Map<String, Object> request = AnthropicClaudeClient.toolRequest("claude-haiku-5-5", 500, "Système",
+                List.of(Map.of("role", "user", "content", "Bonjour")), List.of());
+
+        assertFalse(request.containsKey("tools"));
     }
 
     @Test

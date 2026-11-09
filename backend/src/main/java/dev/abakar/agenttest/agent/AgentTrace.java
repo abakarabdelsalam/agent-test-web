@@ -49,6 +49,10 @@ public class AgentTrace {
                 + " -> " + (result.error() ? "ERREUR " : "") + result.text());
     }
 
+    public void verdict(String spec, boolean confirmed, String reason) {
+        print("Vérification " + spec + " : " + (confirmed ? "confirmé" : "rejeté") + " (" + summarize(reason) + ")");
+    }
+
     public void stop(String endedBy, int actions, double costUsd) {
         print("Arrêt après " + actions + " action(s) : " + reason(endedBy)
                 + String.format(Locale.FRANCE, " (coût estimé : %.4f $)", costUsd));

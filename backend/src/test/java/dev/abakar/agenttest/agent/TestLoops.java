@@ -31,7 +31,7 @@ public final class TestLoops {
         return new ToolLoop(claude, new AllowedSites(Set.of("localhost")),
                 new ReportValidator(Validation.buildDefaultValidatorFactory().getValidator()),
                 new AgentTrace(true, console), limits, HAIKU, new Specifications(Path.of("absent.md")), clock,
-                known);
+                known, new BugVerifier(claude));
     }
 
     public static ToolLoop loop(ClaudeClient claude) {

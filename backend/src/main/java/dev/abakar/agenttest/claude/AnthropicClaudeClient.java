@@ -1,6 +1,7 @@
 package dev.abakar.agenttest.claude;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,12 +71,16 @@ public class AnthropicClaudeClient implements ClaudeClient {
 
     static Map<String, Object> toolRequest(String model, int maxTokens, String system,
             List<Map<String, Object>> messages, List<Map<String, Object>> tools) {
-        return Map.of(
+        Map<String, Object> request = new HashMap<>(Map.of(
                 "model", model,
                 "max_tokens", maxTokens,
                 "system", system,
-                "tools", tools,
-                "messages", messages);
+                "messages", messages));
+        // Sans outil, on n'envoie pas le champ : c'est le cas du vérificateur.
+        if (!tools.isEmpty()) {
+            request.put("tools", tools);
+        }
+        return request;
     }
 
     static String extractText(Map<?, ?> response) {
