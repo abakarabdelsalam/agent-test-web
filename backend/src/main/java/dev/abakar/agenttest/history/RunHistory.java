@@ -5,13 +5,14 @@ import java.util.List;
 import java.util.Optional;
 
 import dev.abakar.agenttest.agent.AgentRun;
+import dev.abakar.agenttest.agent.KnownFindings;
 import dev.abakar.agenttest.history.RunDetail.BugView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Enregistre les parcours, les relit et enregistre la validation humaine des bugs. */
 @Service
-public class RunHistory implements RunRecorder {
+public class RunHistory implements RunRecorder, KnownFindings {
 
     private final RunRepository runs;
     private final BugRepository bugs;
@@ -40,6 +41,14 @@ public class RunHistory implements RunRecorder {
                 run.getId(), run.getSite(), run.getInstruction(), run.getEndedBy(), run.getCostUsd(),
                 run.getActionCount(), run.getFinalText(), run.getCreatedAt(),
                 run.getBugs().stream().map(RunHistory::view).toList()));
+    }
+
+    // Seuls les bugs validés par une personne entrent en mémoire : un bug seulement signalé ne compte pas.
+    @Transactional(readOnly = true)
+    public List<String> validatedFor(String site) {
+        return bugs.findByRunSiteAndStatus(site, ValidationStatus.VALIDE).stream()
+                .map(bug -> bug.getSpec() + " : " + bug.getTitle())
+                .toList();
     }
 
     @Transactional

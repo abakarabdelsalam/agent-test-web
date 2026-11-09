@@ -63,6 +63,21 @@ class RunHistoryTest {
     }
 
     @Test
+    void remembersOnlyValidatedBugsOfTheSameSite() {
+        RunHistory history = history();
+        history.record("http://localhost:4200", runWithOneBug());
+        long bugId = history.find(history.recent().getFirst().id()).orElseThrow().bugs().getFirst().id();
+
+        assertTrue(history.validatedFor("http://localhost:4200").isEmpty());
+
+        history.validate(bugId, ValidationStatus.VALIDE);
+
+        assertEquals(List.of("SPEC-01 : Recherche sensible à la casse"),
+                history.validatedFor("http://localhost:4200"));
+        assertTrue(history.validatedFor("http://autre-site").isEmpty());
+    }
+
+    @Test
     void reportsUnknownRunAndBugAsAbsent() {
         RunHistory history = history();
 

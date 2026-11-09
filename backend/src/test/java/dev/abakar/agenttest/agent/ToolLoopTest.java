@@ -109,6 +109,25 @@ class ToolLoopTest {
     }
 
     @Test
+    void tellsTheModelWhichFindingsAreAlreadyValidated() {
+        List<String> systems = new ArrayList<>();
+        ClaudeClient recording = new FakeClaudeClient(List.of(ClaudeReply.endTurn("Fini."))) {
+            @Override
+            public ClaudeReply converse(String system, List<Map<String, Object>> messages,
+                    List<Map<String, Object>> tools) {
+                systems.add(system);
+                return super.converse(system, messages, tools);
+            }
+        };
+        KnownFindings known = site -> List.of("SPEC-01 : la recherche ignore la casse");
+
+        TestLoops.loop(recording, TestLoops.LIMITS, Clock.fixed(Instant.EPOCH, ZoneOffset.UTC), console::add, known)
+                .run(session, URL, "Vérifie");
+
+        assertTrue(systems.getFirst().contains("à ne pas signaler à nouveau : SPEC-01 : la recherche ignore la casse"));
+    }
+
+    @Test
     void searchesSpecificationsWithoutTouchingTheBrowser() {
         AgentRun run = loopWith(new FakeClaudeClient(List.of(
                 ClaudeReply.toolUse("toolu_s", "chercher_specification", Map.of("question", "recherche casse")),

@@ -36,6 +36,7 @@ public class ToolLoop {
             Signale avec signaler_bug chaque écart prouvé avec les spécifications ci-dessous, en citant son SPEC-xx, dès que tu l'as prouvé et sans attendre la fin.
             Une fois un écart signalé, ne le reteste pas avec d'autres valeurs : passe à une autre page ou fonctionnalité (fiche produit, prix, panier, filtres).
             Tu disposes d'au plus %d actions. Quand la consigne est accomplie, réponds par un court résumé.
+            Écarts déjà validés sur ce site, à ne pas signaler à nouveau : %s
 
             <specifications>
             Exigences disponibles : %s. Leur texte s'obtient avec chercher_specification, qui renvoie les plus proches.
@@ -54,13 +55,14 @@ public class ToolLoop {
     private final Pricing pricing;
     private final SpecificationIndex index;
     private final Clock clock;
+    private final KnownFindings known;
 
     private static final String SEARCH_TOOL = "chercher_specification";
     private static final int SEARCH_LIMIT = 3;
 
     @Autowired
     public ToolLoop(ClaudeClient claude, AllowedSites allowedSites, ReportValidator validator, AgentTrace trace,
-            AgentLimits limits, Pricing pricing, Specifications specifications, Clock clock) {
+            AgentLimits limits, Pricing pricing, Specifications specifications, Clock clock, KnownFindings known) {
         this.claude = claude;
         this.allowedSites = allowedSites;
         this.validator = validator;
@@ -69,13 +71,14 @@ public class ToolLoop {
         this.pricing = pricing;
         this.index = new SpecificationIndex(specifications.text());
         this.clock = clock;
+        this.known = known;
     }
 
     public AgentRun run(BrowserSession session, String url, String instruction) {
         // Les outils sont recréés à chaque parcours : ils gardent les bugs signalés pendant ce parcours.
         BrowserTools tools = new BrowserTools(session, allowedSites, validator);
         List<AgentRun.Action> actions = new ArrayList<>();
-        String system = SYSTEM_PROMPT.formatted(limits.maxActions(), index.ids());
+        String system = SYSTEM_PROMPT.formatted(limits.maxActions(), knownText(url), index.ids());
         Instant start = clock.instant();
         double cost = 0;
 
@@ -127,6 +130,12 @@ public class ToolLoop {
             // Tous les résultats repartent dans un seul message user, chacun relié à sa demande par son id.
             messages.add(Map.of("role", "user", "content", results));
         }
+    }
+
+    // Ce que la mémoire sait déjà sur ce site, présenté à Claude pour qu'il ne le redécouvre pas.
+    private String knownText(String url) {
+        List<String> findings = known.validatedFor(url);
+        return findings.isEmpty() ? "aucun" : String.join(" ; ", findings);
     }
 
     // Ne lit aucune page : elle ne touche qu'au texte des spécifications.
