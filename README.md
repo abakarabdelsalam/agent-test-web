@@ -26,7 +26,8 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 - **Mode observation** (désactivé par défaut) : fenêtre Chromium visible, pause d'une seconde entre les actions et journal en français dans la console du backend.
 - **Historique** : chaque parcours est enregistré dans PostgreSQL, avec ses bugs. Chaque bug peut être validé ou rejeté par l'API.
 - **Mémoire** : les bugs validés par une personne sont présentés à l'agent au parcours suivant, sur le même site, pour qu'il ne les signale pas à nouveau.
-- **Tests** : 88 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
+- **Vision** : pour un défaut visuel (image absente, mise en page cassée), l'agent prend une capture d'écran et la regarde, au lieu de se fier au seul texte de la page.
+- **Tests** : 89 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
 
 ## Prochaines étapes
 

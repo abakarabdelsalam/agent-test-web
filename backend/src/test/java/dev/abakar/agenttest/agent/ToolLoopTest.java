@@ -128,6 +128,23 @@ class ToolLoopTest {
     }
 
     @Test
+    void asksForAScreenshotWhenTheTextIsNotEnough() {
+        List<String> systems = new ArrayList<>();
+        ClaudeClient recording = new FakeClaudeClient(List.of(ClaudeReply.endTurn("Fini."))) {
+            @Override
+            public ClaudeReply converse(String system, List<Map<String, Object>> messages,
+                    List<Map<String, Object>> tools) {
+                systems.add(system);
+                return super.converse(system, messages, tools);
+            }
+        };
+
+        loopWith(recording).run(session, URL, "Vérifie les images");
+
+        assertTrue(systems.getFirst().contains("prends une capture avec capture"));
+    }
+
+    @Test
     void searchesSpecificationsWithoutTouchingTheBrowser() {
         AgentRun run = loopWith(new FakeClaudeClient(List.of(
                 ClaudeReply.toolUse("toolu_s", "chercher_specification", Map.of("question", "recherche casse")),
