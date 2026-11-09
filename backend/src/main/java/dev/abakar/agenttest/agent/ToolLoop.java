@@ -66,6 +66,8 @@ public class ToolLoop {
     private static final String SEARCH_TOOL = "chercher_specification";
     private static final int SEARCH_LIMIT = 3;
     private static final int MAX_EVIDENCE_CHARS = 8000;
+    // Trois essais espacés de deux secondes pour une erreur passagère de l'API.
+    private static final RetryPolicy RETRY = new RetryPolicy(3, Duration.ofSeconds(2));
 
     @Autowired
     public ToolLoop(ClaudeClient claude, AllowedSites allowedSites, ReportValidator validator, AgentTrace trace,
@@ -119,7 +121,7 @@ public class ToolLoop {
 
             ClaudeReply reply;
             try {
-                reply = claude.converse(system, messages, TOOLS);
+                reply = RETRY.run(() -> claude.converse(system, messages, TOOLS));
             } catch (RestClientException e) {
                 // Clé invalide, crédit épuisé, réseau coupé : on arrête proprement avec la cause.
                 return finish(instruction, "api_error", e.getMessage(), actions, url, tools, cost);

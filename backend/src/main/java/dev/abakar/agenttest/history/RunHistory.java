@@ -40,7 +40,8 @@ public class RunHistory implements RunRecorder, KnownFindings {
         return runs.findById(id).map(run -> new RunDetail(
                 run.getId(), run.getSite(), run.getInstruction(), run.getEndedBy(), run.getCostUsd(),
                 run.getActionCount(), run.getFinalText(), run.getCreatedAt(),
-                run.getBugs().stream().map(RunHistory::view).toList()));
+                run.getBugs().stream().map(RunHistory::view).toList(),
+                run.getActions().stream().map(RunHistory::actionView).toList()));
     }
 
     // Seuls les bugs validés par une personne entrent en mémoire : un bug seulement signalé ne compte pas.
@@ -62,6 +63,11 @@ public class RunHistory implements RunRecorder, KnownFindings {
     private static RunSummary summary(RunEntity run) {
         return new RunSummary(run.getId(), run.getSite(), run.getInstruction(), run.getEndedBy(),
                 run.getCostUsd(), run.getActionCount(), run.getBugs().size(), run.getCreatedAt());
+    }
+
+    private static RunDetail.ActionView actionView(ActionEntity action) {
+        return new RunDetail.ActionView(action.getPosition(), action.getTool(), action.getInput(),
+                action.getResult(), action.isError());
     }
 
     private static BugView view(BugEntity bug) {

@@ -15,7 +15,12 @@ public record RunDetail(
         int actionCount,
         String finalText,
         Instant createdAt,
-        List<BugView> bugs) {
+        List<BugView> bugs,
+        List<ActionView> actions) {
+
+    /** Une action de la trace : ce que l'agent a demandé, et ce qui en est revenu. */
+    public record ActionView(int position, String tool, String input, String result, boolean error) {
+    }
 
     public record BugView(
             long id,

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 
 import dev.abakar.agenttest.agent.AgentRun;
 import dev.abakar.agenttest.report.BugReport;
@@ -75,6 +76,21 @@ class RunHistoryTest {
         assertEquals(List.of("SPEC-01 : Recherche sensible à la casse"),
                 history.validatedFor("http://localhost:4200"));
         assertTrue(history.validatedFor("http://autre-site").isEmpty());
+    }
+
+    @Test
+    void keepsTheActionsOfARunInOrder() {
+        AgentRun run = new AgentRun("Cherche casque", "end_turn", "Fini.", 0.001, List.of(
+                new AgentRun.Action("ouvrir", Map.of("url", "http://localhost:4200"), "Page ouverte", false),
+                new AgentRun.Action("lire_page", Map.of(), "ERREUR inconnue", true)),
+                new RunReport("http://localhost:4200", List.of()));
+        RunHistory history = history();
+        history.record("http://localhost:4200", run);
+
+        RunDetail detail = history.find(history.recent().getFirst().id()).orElseThrow();
+
+        assertEquals(List.of("ouvrir", "lire_page"), detail.actions().stream().map(RunDetail.ActionView::tool).toList());
+        assertTrue(detail.actions().getLast().error());
     }
 
     @Test

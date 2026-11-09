@@ -44,6 +44,10 @@ public class RunEntity {
     @OrderBy("id")
     private List<BugEntity> bugs = new ArrayList<>();
 
+    @OneToMany(mappedBy = "run", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("position")
+    private List<ActionEntity> actions = new ArrayList<>();
+
     protected RunEntity() {
     }
 
@@ -56,6 +60,9 @@ public class RunEntity {
         this.finalText = run.finalText();
         this.createdAt = createdAt;
         run.report().bugs().forEach(bug -> bugs.add(new BugEntity(this, bug)));
+        for (int i = 0; i < run.actions().size(); i++) {
+            actions.add(new ActionEntity(this, i, run.actions().get(i)));
+        }
     }
 
     public Long getId() { return id; }
@@ -67,4 +74,5 @@ public class RunEntity {
     public String getFinalText() { return finalText; }
     public Instant getCreatedAt() { return createdAt; }
     public List<BugEntity> getBugs() { return bugs; }
+    public List<ActionEntity> getActions() { return actions; }
 }
