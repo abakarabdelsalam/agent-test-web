@@ -28,7 +28,8 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 - **Mémoire** : les bugs validés par une personne sont présentés à l'agent au parcours suivant, sur le même site, pour qu'il ne les signale pas à nouveau.
 - **Vision** : pour un défaut visuel (image absente, mise en page cassée), l'agent prend une capture d'écran et la regarde, au lieu de se fier au seul texte de la page.
 - **Vérificateur** : chaque bug signalé est revérifié par un second appel à Claude, à partir des observations. Seul un bug confirmé entre dans le rapport. Chaque vérification coûte un petit montant, compté dans le coût du parcours.
-- **Tests** : 92 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
+- **Planificateur** : avant le test, un premier appel à Claude découpe la consigne en 2 à 5 étapes, qui guident le testeur. Sans plan, l'agent travaille quand même.
+- **Tests** : 94 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
 
 ## Prochaines étapes
 

@@ -1,5 +1,6 @@
 package dev.abakar.agenttest.agent;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -47,6 +48,10 @@ public class AgentTrace {
     public void action(int number, int max, String tool, Map<String, Object> input, ToolResult result) {
         print("Action " + number + "/" + max + " : " + tool + " " + input
                 + " -> " + (result.error() ? "ERREUR " : "") + result.text());
+    }
+
+    public void plan(List<String> steps) {
+        print("Plan : " + String.join(" ; ", steps));
     }
 
     public void verdict(String spec, boolean confirmed, String reason) {

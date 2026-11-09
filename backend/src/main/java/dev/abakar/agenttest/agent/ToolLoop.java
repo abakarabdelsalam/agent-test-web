@@ -39,6 +39,7 @@ public class ToolLoop {
             Une fois un écart signalé, ne le reteste pas avec d'autres valeurs : passe à une autre page ou fonctionnalité (fiche produit, prix, panier, filtres).
             Pour un défaut visuel (image absente, mise en page cassée, élément caché), le texte de la page ne suffit pas : prends une capture avec capture et regarde-la.
             Tu disposes d'au plus %d actions. Quand la consigne est accomplie, réponds par un court résumé.
+            Plan à suivre : %s
             Écarts déjà validés sur ce site, à ne pas signaler à nouveau : %s
 
             <specifications>
@@ -60,6 +61,7 @@ public class ToolLoop {
     private final Clock clock;
     private final KnownFindings known;
     private final BugVerifier verifier;
+    private final Planner planner;
 
     private static final String SEARCH_TOOL = "chercher_specification";
     private static final int SEARCH_LIMIT = 3;
@@ -68,7 +70,7 @@ public class ToolLoop {
     @Autowired
     public ToolLoop(ClaudeClient claude, AllowedSites allowedSites, ReportValidator validator, AgentTrace trace,
             AgentLimits limits, Pricing pricing, Specifications specifications, Clock clock, KnownFindings known,
-            BugVerifier verifier) {
+            BugVerifier verifier, Planner planner) {
         this.claude = claude;
         this.allowedSites = allowedSites;
         this.validator = validator;
@@ -79,15 +81,29 @@ public class ToolLoop {
         this.clock = clock;
         this.known = known;
         this.verifier = verifier;
+        this.planner = planner;
     }
 
     public AgentRun run(BrowserSession session, String url, String instruction) {
         // Les outils sont recréés à chaque parcours : ils gardent les bugs signalés pendant ce parcours.
         BrowserTools tools = new BrowserTools(session, allowedSites, validator);
         List<AgentRun.Action> actions = new ArrayList<>();
-        String system = SYSTEM_PROMPT.formatted(limits.maxActions(), knownText(url), index.ids());
         Instant start = clock.instant();
         double cost = 0;
+
+        // Le planificateur découpe la consigne ; sans plan, le testeur travaille quand même.
+        String plan = "aucun";
+        try {
+            Planner.Plan planned = planner.plan(instruction);
+            cost += pricing.cost(planned.usage());
+            if (!planned.steps().isEmpty()) {
+                plan = String.join(" ; ", planned.steps());
+                trace.plan(planned.steps());
+            }
+        } catch (RestClientException e) {
+            // L'erreur réelle sera signalée par le premier appel du testeur.
+        }
+        String system = SYSTEM_PROMPT.formatted(limits.maxActions(), plan, knownText(url), index.ids());
 
         // L'API ne garde aucune mémoire : on lui renvoie tout l'historique à chaque tour.
         List<Map<String, Object>> messages = new ArrayList<>();
