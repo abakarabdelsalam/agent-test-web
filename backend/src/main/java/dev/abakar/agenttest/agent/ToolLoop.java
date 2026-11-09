@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.abakar.agenttest.browser.AllowedSites;
 import dev.abakar.agenttest.browser.BrowserSession;
@@ -36,9 +38,13 @@ public class ToolLoop {
             Tu disposes d'au plus %d actions. Quand la consigne est accomplie, réponds par un court résumé.
 
             <specifications>
-            %s
+            Exigences disponibles : %s. Leur texte s'obtient avec chercher_specification, qui renvoie les plus proches.
             </specifications>
             """;
+
+    // Les outils du navigateur, plus la recherche dans les spécifications.
+    private static final List<Map<String, Object>> TOOLS = Stream.concat(
+            BrowserTools.DEFINITIONS.stream(), Stream.of(SpecificationIndex.DEFINITION)).toList();
 
     private final ClaudeClient claude;
     private final AllowedSites allowedSites;
@@ -46,8 +52,11 @@ public class ToolLoop {
     private final AgentTrace trace;
     private final AgentLimits limits;
     private final Pricing pricing;
-    private final Specifications specifications;
+    private final SpecificationIndex index;
     private final Clock clock;
+
+    private static final String SEARCH_TOOL = "chercher_specification";
+    private static final int SEARCH_LIMIT = 3;
 
     @Autowired
     public ToolLoop(ClaudeClient claude, AllowedSites allowedSites, ReportValidator validator, AgentTrace trace,
@@ -58,7 +67,7 @@ public class ToolLoop {
         this.trace = trace;
         this.limits = limits;
         this.pricing = pricing;
-        this.specifications = specifications;
+        this.index = new SpecificationIndex(specifications.text());
         this.clock = clock;
     }
 
@@ -66,7 +75,7 @@ public class ToolLoop {
         // Les outils sont recréés à chaque parcours : ils gardent les bugs signalés pendant ce parcours.
         BrowserTools tools = new BrowserTools(session, allowedSites, validator);
         List<AgentRun.Action> actions = new ArrayList<>();
-        String system = SYSTEM_PROMPT.formatted(limits.maxActions(), specifications.text());
+        String system = SYSTEM_PROMPT.formatted(limits.maxActions(), index.ids());
         Instant start = clock.instant();
         double cost = 0;
 
@@ -84,7 +93,7 @@ public class ToolLoop {
 
             ClaudeReply reply;
             try {
-                reply = claude.converse(system, messages, BrowserTools.DEFINITIONS);
+                reply = claude.converse(system, messages, TOOLS);
             } catch (RestClientException e) {
                 // Clé invalide, crédit épuisé, réseau coupé : on arrête proprement avec la cause.
                 return finish(instruction, "api_error", e.getMessage(), actions, url, tools, cost);
@@ -109,7 +118,7 @@ public class ToolLoop {
                 if (limit.isPresent()) {
                     return finish(instruction, limit.get(), reply.text(), actions, url, tools, cost);
                 }
-                ToolResult result = tools.execute(call);
+                ToolResult result = SEARCH_TOOL.equals(call.name()) ? search(call) : tools.execute(call);
                 actions.add(new AgentRun.Action(call.name(), call.input(), result.text(), result.error()));
                 trace.action(actions.size(), limits.maxActions(), call.name(), call.input(), result);
                 results.add(result.toBlock(call.id()));
@@ -118,6 +127,20 @@ public class ToolLoop {
             // Tous les résultats repartent dans un seul message user, chacun relié à sa demande par son id.
             messages.add(Map.of("role", "user", "content", results));
         }
+    }
+
+    // Ne lit aucune page : elle ne touche qu'au texte des spécifications.
+    private ToolResult search(ToolCall call) {
+        if (!(call.input().get("question") instanceof String question) || question.isBlank()) {
+            return ToolResult.error("Paramètre manquant : question");
+        }
+        List<SpecificationIndex.Requirement> found = index.search(question, SEARCH_LIMIT);
+        if (found.isEmpty()) {
+            return ToolResult.ok("Aucune spécification ne correspond. Essaie d'autres mots.");
+        }
+        return ToolResult.ok(found.stream()
+                .map(requirement -> requirement.id() + " : " + requirement.text())
+                .collect(Collectors.joining("\n")));
     }
 
     /** La raison d'arrêt si une limite est atteinte ou dépassée, sinon vide. */

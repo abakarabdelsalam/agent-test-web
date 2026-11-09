@@ -1,6 +1,7 @@
 package dev.abakar.agenttest.agent;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Clock;
@@ -105,6 +106,17 @@ class ToolLoopTest {
 
         assertTrue(systems.getFirst().contains("au plus 5 actions"));
         assertTrue(systems.getFirst().contains("<specifications>"));
+    }
+
+    @Test
+    void searchesSpecificationsWithoutTouchingTheBrowser() {
+        AgentRun run = loopWith(new FakeClaudeClient(List.of(
+                ClaudeReply.toolUse("toolu_s", "chercher_specification", Map.of("question", "recherche casse")),
+                ClaudeReply.endTurn("Fini.")))).run(session, URL, "Vérifie la recherche");
+
+        assertEquals("chercher_specification", run.actions().getFirst().tool());
+        assertFalse(run.actions().getFirst().error());
+        assertTrue(session.calls.isEmpty());
     }
 
     @Test
