@@ -34,9 +34,18 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 - **Intégration continue** : GitHub Actions lance les tests du backend et ceux de la mesure à chaque envoi. Aucune clé API n'est nécessaire.
 - **Tests** : 100 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
 
+## Limites connues
+
+- Le score reste loin de la cible de 15 bugs sur 20 : 4 à 5 bugs à 40 actions, mesurés sur quelques essais seulement.
+- La vision, le vérificateur, le planificateur et la mémoire sont testés en mode simulé. Ils n'ont pas encore été validés sur plusieurs parcours réels avec l'API.
+- Parfois, `signaler_bug` est appelé sans indiquer la gravité : l'action est alors gaspillée.
+- L'écran de l'historique est vérifié par un test sur son contenu, pas par un test dans un navigateur.
+
 ## Prochaines étapes
 
 - Améliorer le score : répéter chaque mesure pour connaître sa variabilité, puis chercher comment trouver davantage de bugs dans la limite d'actions.
+- Corriger l'appel de `signaler_bug` sans gravité.
+- Valider la vision, le vérificateur et le planificateur sur des parcours réels.
 
 ## Structure
 
