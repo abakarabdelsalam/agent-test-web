@@ -1,0 +1,56 @@
+version: 1
+id: techshop
+title: Tester TechShop avec l'agent
+description: Parcours de démonstration. Le lancement de l'agent se fait avant la capture, par son API en mode simulé.
+kind: proof
+status: ready
+language: fr
+audience: Recruteurs et lecteurs du portfolio
+viewport:
+  width: 1920
+  height: 1080
+setup: []
+chapters:
+  - id: site
+    title: Un site à tester
+    narration: TechShop est une boutique Angular avec vingt bugs volontaires.
+    steps:
+      - action: navigate
+        surface: techshop
+        path: /
+        caption: TechShop, la boutique à tester
+        holdMs: 3000
+      - action: fill
+        selector:
+          testId: search
+        value: casque
+        caption: Recherche de casque
+        focus: true
+        holdMs: 1500
+      - action: waitFor
+        selector:
+          testId: no-result
+        caption: "Aucun résultat pour « casque » : écart SPEC-01, la recherche ignore la casse"
+        holdMs: 3000
+        timeoutMs: 15000
+      - action: fill
+        selector:
+          testId: search
+        value: Casque
+        caption: Avec une majuscule, le produit apparaît
+        holdMs: 1500
+      - action: waitFor
+        selector:
+          testId: product-card
+        caption: Résultats du catalogue
+        holdMs: 2500
+        timeoutMs: 15000
+  - id: historique
+    title: Ce que l'agent a fait
+    narration: L'historique garde chaque parcours, ses actions et ses bugs.
+    steps:
+      - action: navigate
+        surface: historique
+        path: /
+        caption: Historique des parcours
+        holdMs: 4000

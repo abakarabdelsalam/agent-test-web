@@ -191,6 +191,28 @@ Arrêt après 4 action(s) : le modèle a terminé (coût estimé : 0,0000 $)
 
 Le journal n'affiche jamais la clé API ni les en-têtes d'authentification. Il ne contient que les actions de l'agent.
 
+## Produire la vidéo de démonstration
+
+La vidéo est générée à partir d'un parcours écrit en YAML (`demo/journeys/techshop.yaml`). L'outil [demo-studio](https://github.com/oumar5/demo-studio) filme le site avec Playwright, puis assemble le MP4. Il est installé hors du dépôt. Sa licence ne permet pas de le republier ici.
+
+```powershell
+# Une fois : installer l'outil, hors du dépôt
+git clone https://github.com/oumar5/demo-studio D:\Outils\demo-studio
+cd D:\Outils\demo-studio
+npm install
+npm run build
+npx playwright install chromium
+```
+
+Lance ensuite le site de test (port 4200) et le backend en mode simulé. Lance un parcours de l'agent pour que l'historique ne soit pas vide, puis :
+
+```powershell
+cd demo
+node D:\Outils\demo-studio\dist\cli.js all --journey techshop --project demo.config.yaml
+```
+
+La vidéo est écrite dans `demo/output/` (non versionnée). Pour l'instant, elle est sans voix off.
+
 ## Appeler vraiment Claude
 
 Ce mode consomme du crédit API. Définis la clé **seulement dans le terminal qui lance le backend**. Elle disparaît quand ce terminal est fermé.

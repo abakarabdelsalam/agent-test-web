@@ -1,0 +1,26 @@
+version: 1
+project:
+  name: Démonstration agent de test
+  language: fr
+  fps: 30
+surfaces:
+  techshop:
+    baseUrl: http://localhost:4200
+  historique:
+    baseUrl: http://localhost:8080
+paths:
+  journeys: journeys
+  public: public
+  runs: public/runs
+  output: output
+pipeline:
+  narration:
+    provider: none
+  avatar:
+    provider: none
+theme:
+  background: "#15171c"
+  accent: "#2b59c3"
+  text: "#ffffff"
+  overlay: rgba(8, 25, 40, 0.88)
+  logoText: TechShop

@@ -12,3 +12,7 @@ CLAUDE.md
 docs/
 .claude/
 evaluation/resultats.json
+demo/output/
+demo/public/runs/
+demo/.remotion/
+demo/.cache/
