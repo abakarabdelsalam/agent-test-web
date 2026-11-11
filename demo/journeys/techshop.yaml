@@ -57,7 +57,13 @@ chapters:
         surface: historique
         path: /
         caption: Historique des parcours
-        holdMs: 6000
+        holdMs: 3000
+      - action: click
+        selector:
+          css: "#runs tr.clickable:first-child"
+        caption: Détail du dernier parcours
+        focus: true
+        holdMs: 3500
   - id: score
     title: Où en est le score
     narration: Aujourd'hui, l'agent trouve quatre à cinq bugs sur vingt, sans fausse alerte. La cible est de quinze. Le travail continue.
