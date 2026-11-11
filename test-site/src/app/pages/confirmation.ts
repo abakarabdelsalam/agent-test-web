@@ -4,8 +4,10 @@ import { Shop, euros } from '../shop';
 @Component({
   template: `
     <h1>Commande confirmée</h1>
-    <p>Merci pour votre commande.</p>
-    <p>Total payé : <strong data-testid="paid-total">{{ euros(shop.lastOrderTotal()) }}</strong></p>
+    <div class="notice">
+      <p>Merci pour votre commande.</p>
+      <p>Total payé : <strong data-testid="paid-total">{{ euros(shop.lastOrderTotal()) }}</strong></p>
+    </div>
   `,
 })
 export class Confirmation {

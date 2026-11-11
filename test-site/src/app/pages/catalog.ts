@@ -31,8 +31,8 @@ import { PRODUCTS, Product, Shop, euros } from '../shop';
         <article data-testid="product-card">
           <img [src]="product.image" [alt]="product.name" />
           <h2><a [routerLink]="['/produit', product.id]">{{ product.name }}</a></h2>
-          <p data-testid="card-price">{{ euros(product.price) }}</p>
-          <p>{{ product.stock > 0 ? 'En stock' : 'Rupture de stock' }}</p>
+          <p class="price" data-testid="card-price">{{ euros(product.price) }}</p>
+          <p class="stock" [class.out]="product.stock === 0">{{ product.stock > 0 ? 'En stock' : 'Rupture de stock' }}</p>
           <button type="button" (click)="shop.add(product)">Ajouter au panier</button>
         </article>
       } @empty {

@@ -6,15 +6,19 @@ import { DETAIL_PRICES, PRODUCTS, Shop, euros } from '../shop';
   imports: [RouterLink],
   template: `
     @if (product; as p) {
-      <h1>{{ p.name }}</h1>
-      <img [src]="p.image" [alt]="p.name" />
-      <p>{{ p.description }}</p>
-      <p data-testid="detail-price">{{ euros(price) }}</p>
-      <button type="button" [disabled]="p.stock === 0" (click)="shop.add(p)">Ajouter au panier</button>
+      <div class="product-detail">
+        <img [src]="p.image" [alt]="p.name" />
+        <div>
+          <h1>{{ p.name }}</h1>
+          <p class="description">{{ p.description }}</p>
+          <p class="price" data-testid="detail-price">{{ euros(price) }}</p>
+          <button type="button" [disabled]="p.stock === 0" (click)="shop.add(p)">Ajouter au panier</button>
+        </div>
+      </div>
     } @else {
-      <p>Produit introuvable.</p>
+      <p class="notice">Produit introuvable.</p>
     }
-    <p><a routerLink="/">Retour au catalogue</a></p>
+    <p class="back"><a routerLink="/">Retour au catalogue</a></p>
   `,
 })
 export class ProductPage {
