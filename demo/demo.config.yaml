@@ -15,7 +15,7 @@ paths:
   output: output
 pipeline:
   narration:
-    provider: none
+    provider: chatterbox
   avatar:
     provider: none
 theme:

@@ -13,25 +13,29 @@ setup: []
 chapters:
   - id: site
     title: Un site à tester
-    narration: TechShop est une boutique Angular avec vingt bugs volontaires.
+    narration: Voici TechShop, une boutique de démonstration. Elle contient vingt bugs volontaires. Un agent d'intelligence artificielle doit les trouver en comparant le site à ses spécifications.
     steps:
       - action: navigate
         surface: techshop
         path: /
         caption: TechShop, la boutique à tester
-        holdMs: 3000
+        holdMs: 5000
+  - id: bug
+    title: Un écart à la spécification
+    narration: Par exemple, la spécification dit que la recherche ignore les majuscules. Pourtant, casque en minuscules ne trouve rien, alors que Casque avec une majuscule trouve le produit. C'est ce genre d'écart que l'agent doit signaler.
+    steps:
       - action: fill
         selector:
           testId: search
         value: casque
-        caption: Recherche de casque
+        caption: Recherche de « casque »
         focus: true
         holdMs: 1500
       - action: waitFor
         selector:
           testId: no-result
-        caption: "Aucun résultat pour « casque » : écart SPEC-01, la recherche ignore la casse"
-        holdMs: 3000
+        caption: "Aucun résultat : écart SPEC-01"
+        holdMs: 3500
         timeoutMs: 15000
       - action: fill
         selector:
@@ -43,14 +47,24 @@ chapters:
         selector:
           testId: product-card
         caption: Résultats du catalogue
-        holdMs: 2500
+        holdMs: 3000
         timeoutMs: 15000
   - id: historique
     title: Ce que l'agent a fait
-    narration: L'historique garde chaque parcours, ses actions et ses bugs.
+    narration: Chaque parcours de l'agent est enregistré, avec ses actions, ses bugs et son coût. Une personne valide ou rejette chaque bug avant qu'il compte.
     steps:
       - action: navigate
         surface: historique
         path: /
         caption: Historique des parcours
-        holdMs: 4000
+        holdMs: 6000
+  - id: score
+    title: Où en est le score
+    narration: Aujourd'hui, l'agent trouve quatre à cinq bugs sur vingt, sans fausse alerte. La cible est de quinze. Le travail continue.
+    steps:
+      - action: waitFor
+        selector:
+          css: body
+        caption: 4 à 5 bugs sur 20, aucune fausse alerte, cible 15
+        holdMs: 5000
+        timeoutMs: 15000

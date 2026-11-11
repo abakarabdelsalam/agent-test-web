@@ -211,7 +211,18 @@ cd demo
 node D:\Outils\demo-studio\dist\cli.js all --journey techshop --project demo.config.yaml
 ```
 
-La vidéo est écrite dans `demo/output/` (non versionnée). Pour l'instant, elle est sans voix off.
+La vidéo est écrite dans `demo/output/` (non versionnée), avec une voix off et des sous-titres en français. Elle dure environ 45 secondes.
+
+La voix off est créée sur la machine par [Chatterbox](https://github.com/resemble-ai/chatterbox), sans service en ligne. Il faut Python 3.11, FFmpeg et une carte graphique NVIDIA (le processeur fonctionne aussi, plus lentement). Le modèle de voix, environ 3 Go, est téléchargé une fois au premier lancement.
+
+```powershell
+# Une fois : environnement Python isolé pour la voix
+python -m venv D:\Outils\chatterbox-venv
+D:\Outils\chatterbox-venv\Scripts\python.exe -m pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+D:\Outils\chatterbox-venv\Scripts\python.exe -m pip install "git+https://github.com/resemble-ai/chatterbox"
+```
+
+Crée ensuite `demo/.env` (non versionné) avec `CHATTERBOX_PYTHON=D:\Outils\chatterbox-venv\Scripts\python.exe`, et ajoute le dossier `bin` de FFmpeg au `PATH` du terminal avant de lancer la génération.
 
 ## Appeler vraiment Claude
 
