@@ -5,58 +5,204 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Historique de l'agent de test</title>
 <style>
-  :root { --bg: #f6f5f1; --panel: #fff; --fg: #1d1f24; --muted: #5d6270; --line: #d6d6cf; --accent: #2b59c3; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #15171c; --panel: #1d2028; --fg: #ecedf0; --muted: #a3a8b5; --line: #353a46; --accent: #8fb0ff; }
+  :root {
+    --bg: #f4f5f7; --panel: #ffffff; --fg: #161a22; --muted: #5f6675; --line: #e3e5ea; --hover: #f7f8fa;
+    --accent: #2f5bd3; --accent-soft: #e8eefc;
+    --ok: #1f7a4d; --ok-soft: #e3f3ea; --warn: #9a5b00; --warn-soft: #fbf0dc; --bad: #b42335; --bad-soft: #fbe6e9;
+    --neutral-soft: #eef0f3; --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+    --on-ok: #ffffff;
   }
-  body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, sans-serif; }
-  main { max-width: 1040px; margin: 0 auto; }
-  h1 { font-size: 22px; margin: 0 0 16px; }
-  h2 { font-size: 17px; margin: 24px 0 8px; }
-  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1218; --panel: #171b23; --fg: #e9ecf1; --muted: #9aa2b1; --line: #2a303b; --hover: #1d222c;
+      --accent: #8eaaff; --accent-soft: #1f2a45;
+      --ok: #5fd197; --ok-soft: #173326; --warn: #f0b35a; --warn-soft: #3a2c15; --bad: #ff8a99; --bad-soft: #3d1c22;
+      --neutral-soft: #232935; --shadow: none; --on-ok: #0b2a1a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  button { font: inherit; }
+
+  /* Barre du haut. */
+  .topbar { background: var(--panel); border-bottom: 1px solid var(--line); }
+  .topbar-inner { max-width: 1280px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+  .logo { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; flex: none; }
+  .brand { min-width: 0; }
+  .brand b { display: block; font-size: 15px; }
+  .brand span { color: var(--muted); font-size: 12px; }
+  .spacer { flex: 1; }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 24px 20px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -.01em; }
+  .lead { color: var(--muted); margin: 0 0 20px; }
+  h2 { font-size: 15px; margin: 0; }
+  h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 24px 0 10px; }
+
+  /* Indicateurs. */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); min-width: 0; }
+  .kpi span { color: var(--muted); font-size: 12px; }
+  .kpi b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; margin-top: 2px; }
+
+  /* Liste et détail côte à côte. */
+  .layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; align-items: start; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); min-width: 0; }
+  .card-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .card-body { padding: 16px; }
+  .scroll { overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   tr.clickable { cursor: pointer; }
-  tr.clickable:hover { background: var(--bg); }
-  .muted { color: var(--muted); }
-  .bug { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
-  button { font: inherit; padding: 4px 10px; margin-right: 6px; border: 1px solid var(--accent); background: transparent; color: var(--accent); border-radius: 6px; cursor: pointer; }
-  button:disabled { opacity: .5; cursor: default; }
-  .status { font-size: 13px; color: var(--muted); }
-  pre { white-space: pre-wrap; word-break: break-word; font-size: 13px; margin: 0; }
-  #message { color: var(--accent); min-height: 1.5em; }
+  tr.clickable:hover { background: var(--hover); }
+  tr.selected, tr.selected:hover { background: var(--accent-soft); }
+  .run-id { font-weight: 600; white-space: nowrap; }
+  .clip { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .sub { color: var(--muted); font-size: 12px; }
+
+  /* Badges. */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: var(--neutral-soft); color: var(--muted); }
+  .badge.ok { background: var(--ok-soft); color: var(--ok); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); }
+  .badge.info { background: var(--accent-soft); color: var(--accent); }
+  .chip { font: 12px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace; background: var(--neutral-soft); padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+
+  /* Détail d'un parcours. */
+  .empty { padding: 48px 16px; text-align: center; color: var(--muted); }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .instruction { font-size: 15px; margin: 0; }
+  .conclusion { margin: 14px 0 0; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--hover); border-radius: 0 6px 6px 0; }
+
+  .bug { border: 1px solid var(--line); border-left: 4px solid var(--muted); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+  .bug.MINEURE { border-left-color: var(--accent); }
+  .bug.MAJEURE { border-left-color: var(--warn); }
+  .bug.CRITIQUE { border-left-color: var(--bad); }
+  .bug-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .bug-title { font-weight: 600; flex: 1 1 200px; min-width: 0; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .compare > div { background: var(--hover); border-radius: 6px; padding: 8px 10px; min-width: 0; }
+  .compare span { display: block; font-size: 12px; color: var(--muted); }
+  .steps { margin: 10px 0 0; padding-left: 20px; color: var(--muted); }
+  .bug-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+  .btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; font-weight: 500; }
+  .btn:hover:not(:disabled) { background: var(--hover); }
+  .btn.primary { background: var(--ok); border-color: var(--ok); color: var(--on-ok); }
+  .btn.primary:hover:not(:disabled) { filter: brightness(1.08); background: var(--ok); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn:focus-visible, tr.clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .action-error td { background: var(--bad-soft); }
+  .mono { font: 12px/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; word-break: break-word; }
+  details summary { cursor: pointer; color: var(--accent); font-size: 12px; margin-top: 4px; }
+
+  #message { min-height: 1.5em; margin: 0 0 12px; color: var(--accent); }
+  #message.error { color: var(--bad); }
+
+  @media (max-width: 1000px) {
+    .layout { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .compare { grid-template-columns: 1fr; }
+    main, .topbar-inner { padding-left: 16px; padding-right: 16px; }
+  }
 </style>
 </head>
 <body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo" aria-hidden="true">A</div>
+    <div class="brand"><b>Agent de test</b><span>Tests automatiques de sites web par rapport aux spécifications</span></div>
+    <div class="spacer"></div>
+    <button class="btn" id="refresh" type="button">Actualiser</button>
+  </div>
+</header>
+
 <main>
   <h1>Historique de l'agent de test</h1>
+  <p class="lead">Chaque parcours de l'agent, ses actions et les bugs qu'il a signalés. Un bug ne compte qu'une fois validé par une personne.</p>
   <p id="message" role="status"></p>
 
-  <section>
-    <h2>Parcours</h2>
-    <table>
-      <thead><tr><th>N°</th><th>Site</th><th>Consigne</th><th>Arrêt</th><th>Coût</th><th>Bugs</th></tr></thead>
-      <tbody id="runs"></tbody>
-    </table>
+  <section class="kpis" aria-label="Indicateurs">
+    <div class="kpi"><span>Parcours</span><b id="kpi-runs">–</b></div>
+    <div class="kpi"><span>Actions exécutées</span><b id="kpi-actions">–</b></div>
+    <div class="kpi"><span>Bugs signalés</span><b id="kpi-bugs">–</b></div>
+    <div class="kpi"><span>Coût total estimé</span><b id="kpi-cost">–</b></div>
   </section>
 
-  <section id="detail" hidden>
-    <h2 id="detail-title"></h2>
-    <p class="muted" id="detail-meta"></p>
-    <h2>Bugs signalés</h2>
-    <div id="bugs"></div>
-    <h2>Actions</h2>
-    <table>
-      <thead><tr><th>#</th><th>Outil</th><th>Paramètres</th><th>Résultat</th></tr></thead>
-      <tbody id="actions"></tbody>
-    </table>
-  </section>
+  <div class="layout">
+    <section class="card">
+      <div class="card-head"><h2>Parcours</h2></div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>N°</th><th>Consigne</th><th>Arrêt</th><th class="num">Bugs</th><th class="num">Coût</th></tr></thead>
+          <tbody id="runs"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" aria-live="polite">
+      <div class="empty" id="placeholder">Choisis un parcours dans la liste pour voir son détail.</div>
+      <div id="detail" hidden>
+        <div class="card-head"><h2 id="detail-title"></h2><span class="spacer"></span><span id="detail-ended"></span></div>
+        <div class="card-body">
+          <p class="instruction" id="detail-instruction"></p>
+          <div class="meta" id="detail-meta"></div>
+          <p class="conclusion" id="detail-conclusion" hidden></p>
+
+          <h3>Bugs signalés</h3>
+          <div id="bugs"></div>
+
+          <h3>Actions</h3>
+          <div class="scroll">
+            <table>
+              <thead><tr><th>#</th><th>Outil</th><th>Paramètres</th><th>Résultat</th></tr></thead>
+              <tbody id="actions"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 </main>
+
 <script>
   // Les contenus viennent de l'agent et des sites testés : on les affiche comme du texte, jamais comme du HTML.
-  const message = (text) => { document.getElementById('message').textContent = text; };
-  const cell = (text) => { const td = document.createElement('td'); td.textContent = text; return td; };
+  const ENDED = {
+    end_turn: ['Terminé', 'ok'], action_limit: ["Limite d'actions", 'warn'], time_limit: ['Limite de temps', 'warn'],
+    budget_limit: ['Limite de budget', 'warn'], api_error: ["Erreur d'API", 'bad'], max_tokens: ['Réponse coupée', 'bad'],
+    refusal: ['Refus', 'bad']
+  };
+  const STATUS = { EN_ATTENTE: ['En attente', ''], VALIDE: ['Validé', 'ok'], REJETE: ['Rejeté', 'bad'] };
+  const SEVERITY = { MINEURE: ['Mineure', 'info'], MAJEURE: ['Majeure', 'warn'], CRITIQUE: ['Critique', 'bad'] };
+  const LONG_RESULT = 220;
+  const PREVIEW_LINES = 3;
+
   let currentId = null;
+
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+  function badge(map, key) {
+    const [label, tone] = map[key] || [key, ''];
+    return el('span', 'badge ' + tone, label);
+  }
+  const money = (value) => value.toFixed(4).replace('.', ',') + ' $';
+  const date = (iso) => iso ? new Date(iso).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+  function message(text, isError) {
+    const node = document.getElementById('message');
+    node.textContent = text;
+    node.classList.toggle('error', Boolean(isError));
+  }
 
   async function api(path, options) {
     const response = await fetch(path, options);
@@ -67,34 +213,66 @@
   async function loadRuns() {
     try {
       const runs = await api('/api/runs');
+      renderKpis(runs);
       const body = document.getElementById('runs');
       body.replaceChildren();
       for (const run of runs) {
-        const row = document.createElement('tr');
-        row.className = 'clickable';
-        row.append(cell(run.id), cell(run.site), cell(run.instruction), cell(run.endedBy),
-          cell(run.costUsd.toFixed(4) + ' $'), cell(run.bugCount));
+        const row = el('tr', 'clickable' + (run.id === currentId ? ' selected' : ''));
+        row.dataset.id = run.id;
+        row.tabIndex = 0;
+        const id = el('td', 'run-id', run.id);
+        const instruction = el('td');
+        instruction.append(el('div', 'clip', run.instruction), el('div', 'sub', date(run.createdAt) + ' · ' + run.site));
+        const ended = el('td');
+        ended.append(badge(ENDED, run.endedBy));
+        row.append(id, instruction, ended, el('td', 'num', run.bugCount), el('td', 'num', money(run.costUsd)));
         row.addEventListener('click', () => showRun(run.id));
+        row.addEventListener('keydown', (event) => { if (event.key === 'Enter') showRun(run.id); });
         body.append(row);
       }
-      message(runs.length ? '' : 'Aucun parcours enregistré pour le moment.');
+      if (runs.length === 0) {
+        const row = el('tr');
+        const td = el('td', 'empty', 'Aucun parcours enregistré pour le moment.');
+        td.colSpan = 5;
+        row.append(td);
+        body.append(row);
+      }
+      message('');
     } catch (error) {
-      message(error.message);
+      message(error.message, true);
     }
+  }
+
+  function renderKpis(runs) {
+    const sum = (key) => runs.reduce((total, run) => total + run[key], 0);
+    document.getElementById('kpi-runs').textContent = runs.length;
+    document.getElementById('kpi-actions').textContent = sum('actionCount');
+    document.getElementById('kpi-bugs').textContent = sum('bugCount');
+    document.getElementById('kpi-cost').textContent = money(sum('costUsd'));
   }
 
   async function showRun(id) {
     try {
       const run = await api('/api/runs/' + id);
       currentId = id;
+      for (const row of document.querySelectorAll('#runs tr')) {
+        row.classList.toggle('selected', Number(row.dataset.id) === id);
+      }
+      document.getElementById('placeholder').hidden = true;
       document.getElementById('detail').hidden = false;
-      document.getElementById('detail-title').textContent = 'Parcours ' + run.id;
-      document.getElementById('detail-meta').textContent =
-        run.site + ' · arrêt : ' + run.endedBy + ' · ' + run.actionCount + ' action(s) · ' + run.costUsd.toFixed(4) + ' $';
+      document.getElementById('detail-title').textContent = 'Parcours n° ' + run.id;
+      document.getElementById('detail-ended').replaceChildren(badge(ENDED, run.endedBy));
+      document.getElementById('detail-instruction').textContent = run.instruction;
+      const meta = document.getElementById('detail-meta');
+      meta.replaceChildren(el('span', '', run.site), el('span', '', date(run.createdAt)),
+        el('span', '', run.actionCount + ' action(s)'), el('span', '', money(run.costUsd)));
+      const conclusion = document.getElementById('detail-conclusion');
+      conclusion.hidden = !run.finalText;
+      conclusion.textContent = run.finalText || '';
       renderBugs(run.bugs);
       renderActions(run.actions);
     } catch (error) {
-      message(error.message);
+      message(error.message, true);
     }
   }
 
@@ -102,30 +280,38 @@
     const container = document.getElementById('bugs');
     container.replaceChildren();
     if (bugs.length === 0) {
-      container.textContent = 'Aucun bug signalé pour ce parcours.';
+      container.append(el('p', 'sub', 'Aucun bug signalé pour ce parcours.'));
       return;
     }
     for (const bug of bugs) {
-      const box = document.createElement('div');
-      box.className = 'bug';
-      const title = document.createElement('strong');
-      title.textContent = bug.spec + ' · ' + bug.severity + ' · ' + bug.title;
-      const status = document.createElement('div');
-      status.className = 'status';
-      status.textContent = 'Statut : ' + bug.status;
-      const expected = document.createElement('p');
-      expected.textContent = 'Attendu : ' + bug.expected;
-      const actual = document.createElement('p');
-      actual.textContent = 'Constaté : ' + bug.actual;
-      const actions = document.createElement('div');
-      for (const [label, statut] of [['Valider', 'VALIDE'], ['Rejeter', 'REJETE']]) {
-        const button = document.createElement('button');
-        button.textContent = label;
+      const box = el('article', 'bug ' + bug.severity);
+      const head = el('div', 'bug-head');
+      head.append(el('span', 'chip', bug.spec), el('span', 'bug-title', bug.title),
+        badge(SEVERITY, bug.severity), badge(STATUS, bug.status));
+
+      const compare = el('div', 'compare');
+      const expected = el('div');
+      expected.append(el('span', '', 'Attendu'), el('div', '', bug.expected));
+      const actual = el('div');
+      actual.append(el('span', '', 'Constaté'), el('div', '', bug.actual));
+      compare.append(expected, actual);
+      box.append(head, compare);
+
+      if (bug.steps && bug.steps.length) {
+        const steps = el('ol', 'steps');
+        for (const step of bug.steps) steps.append(el('li', '', step));
+        box.append(steps);
+      }
+
+      const actions = el('div', 'bug-actions');
+      for (const [label, statut, style] of [['Valider', 'VALIDE', 'btn primary'], ['Rejeter', 'REJETE', 'btn']]) {
+        const button = el('button', style, label);
+        button.type = 'button';
         button.disabled = bug.status === statut;
         button.addEventListener('click', () => validate(bug.id, statut));
         actions.append(button);
       }
-      box.append(title, status, expected, actual, actions);
+      box.append(actions);
       container.append(box);
     }
   }
@@ -134,10 +320,29 @@
     const body = document.getElementById('actions');
     body.replaceChildren();
     for (const action of actions) {
-      const row = document.createElement('tr');
-      const result = cell(action.result);
-      if (action.error) result.style.color = 'var(--accent)';
-      row.append(cell(action.position + 1), cell(action.tool), cell(action.input), result);
+      const row = el('tr', action.error ? 'action-error' : '');
+      const tool = el('td');
+      tool.append(el('span', 'chip', action.tool));
+      const result = el('td');
+      const text = action.result || '';
+      const lines = text.split('\n');
+      if (text.length > LONG_RESULT || lines.length > PREVIEW_LINES) {
+        const preview = el('div', 'mono', lines.slice(0, PREVIEW_LINES).join('\n').slice(0, LONG_RESULT) + '…');
+        const more = el('details');
+        more.append(el('summary', '', 'Voir tout'), el('div', 'mono', text));
+        more.addEventListener('toggle', () => { preview.hidden = more.open; });
+        result.append(preview, more);
+      } else {
+        result.append(el('div', 'mono', text));
+      }
+      row.append(el('td', 'num', action.position + 1), tool, el('td', 'mono', action.input), result);
+      body.append(row);
+    }
+    if (actions.length === 0) {
+      const row = el('tr');
+      const td = el('td', 'sub', 'Aucune action enregistrée.');
+      td.colSpan = 4;
+      row.append(td);
       body.append(row);
     }
   }
@@ -149,13 +354,17 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ statut })
       });
-      message('Bug ' + statut.toLowerCase() + '.');
+      message(statut === 'VALIDE' ? 'Bug validé.' : 'Bug rejeté.');
       await showRun(currentId);
     } catch (error) {
-      message(error.message);
+      message(error.message, true);
     }
   }
 
+  document.getElementById('refresh').addEventListener('click', async () => {
+    await loadRuns();
+    if (currentId !== null) await showRun(currentId);
+  });
   loadRuns();
 </script>
 </body>

@@ -30,7 +30,7 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 - **Vérificateur** : chaque bug signalé est revérifié par un second appel à Claude, à partir des observations. Seul un bug confirmé entre dans le rapport. Chaque vérification coûte un petit montant, compté dans le coût du parcours.
 - **Planificateur** : avant le test, un premier appel à Claude découpe la consigne en 2 à 5 étapes, qui guident le testeur. Sans plan, l'agent travaille quand même.
 - **Traces et reprises** : chaque action d'un parcours est gardée dans l'historique, dans l'ordre (`GET /api/runs/{id}`). Une erreur passagère de l'API (trop de requêtes, serveur indisponible) est reprise deux fois avant d'arrêter le parcours.
-- **Écran de l'historique** : http://localhost:8080/ liste les parcours, affiche les actions de chacun et permet de valider ou rejeter les bugs. C'est une page HTML simple, sans Angular.
+- **Écran de l'historique** : http://localhost:8080/ affiche les indicateurs (parcours, actions, bugs, coût), la liste des parcours et le détail de chacun : conclusion de l'agent, bugs avec leur gravité et leurs étapes, actions exécutées. Chaque bug peut être validé ou rejeté. C'est une page HTML sans Angular, en mode clair ou sombre selon le système.
 - **Intégration continue** : GitHub Actions lance les tests du backend et ceux de la mesure à chaque envoi. Aucune clé API n'est nécessaire.
 - **Tests** : 100 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
 
