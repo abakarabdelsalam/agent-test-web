@@ -90,7 +90,7 @@ Résultat attendu : `20/20 bugs reproduits`.
 
 ## Lancer le backend sans frais
 
-Par défaut, le backend utilise des réponses simulées et n'appelle pas l'API Claude. Au démarrage, la console indique le mode actif : `Mode Claude : simulé, aucun appel à l'API.` ou `Mode Claude : réel (claude-haiku-5-5), chaque appel consomme du crédit API.`
+Par défaut, le backend utilise des réponses simulées et n'appelle pas l'API Claude. Au démarrage, la console indique le mode actif : `Mode Claude : simulé, aucun appel à l'API.` ou `Mode Claude : réel (claude-haiku-4-5), chaque appel consomme du crédit API.`
 
 Le backend enregistre l'historique dans PostgreSQL. Lance d'abord la base, avec Docker Desktop ouvert :
 

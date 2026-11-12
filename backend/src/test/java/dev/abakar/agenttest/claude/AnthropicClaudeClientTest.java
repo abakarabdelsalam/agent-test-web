@@ -29,7 +29,7 @@ class AnthropicClaudeClientTest {
     @Test
     void refusesMissingApiKey() {
         assertThrows(IllegalStateException.class,
-                () -> new AnthropicClaudeClient("", "claude-haiku-5-5", 500, 4096));
+                () -> new AnthropicClaudeClient("", "claude-haiku-4-5", 500, 4096));
     }
 
     @Test
@@ -39,10 +39,10 @@ class AnthropicClaudeClientTest {
 
     @Test
     void buildsToolRequest() {
-        Map<String, Object> request = AnthropicClaudeClient.toolRequest("claude-haiku-5-5", 4096, "Système",
+        Map<String, Object> request = AnthropicClaudeClient.toolRequest("claude-haiku-4-5", 4096, "Système",
                 List.of(Map.of("role", "user", "content", "Bonjour")), List.of(Map.of("name", "ouvrir")));
 
-        assertEquals("claude-haiku-5-5", request.get("model"));
+        assertEquals("claude-haiku-4-5", request.get("model"));
         assertEquals(4096, request.get("max_tokens"));
         assertEquals("Système", request.get("system"));
         assertEquals(1, ((List<?>) request.get("tools")).size());
@@ -50,7 +50,7 @@ class AnthropicClaudeClientTest {
 
     @Test
     void omitsToolsWhenThereAreNone() {
-        Map<String, Object> request = AnthropicClaudeClient.toolRequest("claude-haiku-5-5", 500, "Système",
+        Map<String, Object> request = AnthropicClaudeClient.toolRequest("claude-haiku-4-5", 500, "Système",
                 List.of(Map.of("role", "user", "content", "Bonjour")), List.of());
 
         assertFalse(request.containsKey("tools"));
