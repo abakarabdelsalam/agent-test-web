@@ -11,10 +11,10 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 - **Agent avec appel d'outils** (`/api/agent`) : Claude choisit les actions et le code Java les exécute avec Playwright. L'agent dispose de 8 outils : ouvrir, lire la page, cliquer, remplir, choisir dans une liste, capture d'écran, signaler un bug et chercher une spécification. Il ne reçoit pas toutes les spécifications d'un coup : il cherche celles qui concernent ce qu'il observe, par recherche de mots communs.
   - Vérifié en **mode simulé** : un scénario enregistré pilote un vrai Chromium sur TechShop.
   - Testé en **mode réel** avec Claude Haiku 5.5 : l'agent termine un parcours seul, et les limites l'arrêtent si besoin. Un parcours complet coûte moins de 0,01 $.
-  - Score mesuré sur les 20 bugs, trois essais par limite :
-    - 20 actions : entre 0 et 3 bugs trouvés, 0 fausse alerte, environ 0,01 $ par essai ;
-    - 40 actions : entre 4 et 5 bugs trouvés, 0 fausse alerte, environ 0,025 $ par essai.
-  - Les bugs SPEC-01, SPEC-02, SPEC-04 et SPEC-06 reviennent presque à chaque essai. Chaque essai s'arrête à la limite d'actions.
+  - Score mesuré sur les 20 bugs, trois essais à 20 actions (après correction du vérificateur) :
+    - Résultats : **1, 3, 0 bugs trouvés** (moyenne 1,33), 0 fausse alerte, coût total 0,0423 $ ;
+    - Bugs confirmés aux essais 1 et 2 : SPEC-04, SPEC-06, SPEC-02, SPEC-09.
+  - Chaque essai s'arrête à la limite d'actions (20). L'agent trouve surtout les bugs visibles d'abord (absence d'image, tri inversé, calcul de prix).
 - **Garde-fous** :
   - chaque parcours s'arrête à 20 actions, 3 minutes ou 0,05 $ de coût estimé, selon la première limite atteinte (réglable dans `application.properties`) ;
   - le coût est calculé à partir des jetons indiqués par l'API et figure dans la réponse ;
@@ -36,9 +36,10 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 
 ## Limites connues
 
-- Le score reste loin de la cible de 15 bugs sur 20 : 4 à 5 bugs à 40 actions, mesurés sur quelques essais seulement.
-- La vision, le vérificateur, le planificateur et la mémoire sont testés en mode simulé. Ils n'ont pas encore été validés sur plusieurs parcours réels avec l'API.
+- Le score reste très loin de la cible de 15 bugs sur 20 : **1,33 bugs en moyenne à 20 actions** et 4 à 5 à 40 actions (mesurés auparavant).
+- Le vérificateur a été corrigé en jour 22 (parsing tolérant des accents et de la mise en forme) ; il n'y a pas encore de mesure avec 40 actions après la correction.
 - Parfois, `signaler_bug` est appelé sans indiquer la gravité : l'action est alors gaspillée.
+- La vision, le planificateur et la mémoire sont testés en mode simulé, pas encore validés sur plusieurs parcours réels avec l'API.
 - L'écran de l'historique est vérifié par un test sur son contenu, pas par un test dans un navigateur.
 
 ## Prochaines étapes
