@@ -32,7 +32,7 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 - **Traces et reprises** : chaque action d'un parcours est gardée dans l'historique, dans l'ordre (`GET /api/runs/{id}`). Une erreur passagère de l'API (trop de requêtes, serveur indisponible) est reprise deux fois avant d'arrêter le parcours.
 - **Écran de l'historique** : http://localhost:8080/ affiche les indicateurs (parcours, actions, bugs, coût), la liste des parcours et le détail de chacun : conclusion de l'agent, bugs avec leur gravité et leurs étapes, actions exécutées. Chaque bug peut être validé ou rejeté. C'est une page HTML sans Angular, en mode clair ou sombre selon le système.
 - **Intégration continue** : GitHub Actions lance les tests du backend et ceux de la mesure à chaque envoi. Aucune clé API n'est nécessaire.
-- **Tests** : 100 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
+- **Tests** : 111 tests backend, dont un qui démarre l'application complète, tous réussis lors de la dernière exécution (`mvn clean test`).
 
 ## Limites connues
 
