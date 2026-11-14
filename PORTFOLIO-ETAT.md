@@ -128,7 +128,6 @@ Temps moyen :          ~60 sec / parcours
 
 ### Synthèses
 - `README.md` (Overview global)
-- `JOUR-6-SYNTHESE.md` (État Jour 6)
 - `PORTFOLIO-ETAT.md` (Ce fichier)
 
 ---

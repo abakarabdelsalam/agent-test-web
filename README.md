@@ -4,13 +4,15 @@ Agent IA qui parcourt un site comme un utilisateur, compare ce qu'il voit aux sp
 
 Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 
+Projet lié : [petclinic-agent-b](https://github.com/abakarabdelsalam/petclinic-agent-b), un agent de non-régression qui teste les PR d'une API Spring Boot et commente le résultat sur GitHub via Jenkins.
+
 ## Fonctionnalités
 
 - **Site de test TechShop** : boutique Angular contenant 20 bugs volontaires. Un script vérifie qu'ils se reproduisent tous dans un vrai navigateur (dernier résultat : 20/20).
 - **Exploration scriptée** (`/api/explore`) : Playwright ouvre le catalogue et applique 3 vérifications écrites à la main. Testé sur TechShop : 3 bugs trouvés. Un site non autorisé est refusé (403) et une requête sans URL est refusée (400).
 - **Agent avec appel d'outils** (`/api/agent`) : Claude choisit les actions et le code Java les exécute avec Playwright. L'agent dispose de 8 outils : ouvrir, lire la page, cliquer, remplir, choisir dans une liste, capture d'écran, signaler un bug et chercher une spécification. Il ne reçoit pas toutes les spécifications d'un coup : il cherche celles qui concernent ce qu'il observe, par recherche de mots communs.
   - Vérifié en **mode simulé** : un scénario enregistré pilote un vrai Chromium sur TechShop.
-  - Testé en **mode réel** avec Claude Haiku 5.5 : l'agent termine un parcours seul, et les limites l'arrêtent si besoin. Un parcours complet coûte moins de 0,01 $.
+  - Testé en **mode réel** avec Claude Haiku 5.5 (le modèle par défaut est depuis passé à Haiku 4.5, sans nouvelle mesure) : l'agent termine un parcours seul, et les limites l'arrêtent si besoin. Un parcours complet coûte moins de 0,01 $.
   - Score mesuré sur les 20 bugs, trois essais à 20 actions (après correction du vérificateur) :
     - Résultats : **1, 3, 0 bugs trouvés** (moyenne 1,33), 0 fausse alerte, coût total 0,0423 $ ;
     - Bugs confirmés aux essais 1 et 2 : SPEC-04, SPEC-06, SPEC-02, SPEC-09.
@@ -37,7 +39,7 @@ Stack : Java 25, Spring Boot 4.1.2, Angular 22, API Claude, Playwright.
 ## Limites connues
 
 - Le score reste très loin de la cible de 15 bugs sur 20 : **1,33 bugs en moyenne à 20 actions** et 4 à 5 à 40 actions (mesurés auparavant).
-- Le vérificateur a été corrigé en jour 22 (parsing tolérant des accents et de la mise en forme) ; il n'y a pas encore de mesure avec 40 actions après la correction.
+- Le vérificateur a été corrigé (parsing tolérant des accents et de la mise en forme) ; il n'y a pas encore de mesure avec 40 actions après la correction.
 - Parfois, `signaler_bug` est appelé sans indiquer la gravité : l'action est alors gaspillée.
 - La vision, le planificateur et la mémoire sont testés en mode simulé, pas encore validés sur plusieurs parcours réels avec l'API.
 - L'écran de l'historique est vérifié par un test sur son contenu, pas par un test dans un navigateur.
