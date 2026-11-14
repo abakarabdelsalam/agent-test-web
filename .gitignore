@@ -16,3 +16,9 @@ demo/output/
 demo/public/runs/
 demo/.remotion/
 demo/.cache/
+
+# Dépôts PetClinic clonés (projet B)
+petclinic-rest/
+petclinic-angular/
+petclinic-rest-verif/
+petclinic-repo/

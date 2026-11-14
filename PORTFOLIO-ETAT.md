@@ -2,7 +2,7 @@
 
 **Date :** 12 novembre 2026 - 18:45  
 **Étape :** Passage Projet A → Projet B  
-**Prochain jalon :** Jour 7 (Playwright MCP)
+**Prochain jalon :** Mesure de variance et PR inédites (Projet B), test Jenkins
 
 ---
 
@@ -41,12 +41,13 @@ Temps moyen :          ~60 sec / parcours
 
 ---
 
-## Projet B : 🚀 Jour 6 completé
+## Projet B : ✅ Jours 6-14 réalisés, mesure en cours
 
 ### État
-- **Phase :** Installation infrastructure
-- **Status :** Backend en ligne, frontend à installer (J7)
-- **Localisation :** `petclinic-repo/` (clone spring-petclinic)
+- **Phase :** Agent et corpus terminés, mesure faite, Jenkins non testé
+- **Status :** Agent de non-régression opérationnel en mode réel
+- **Localisation :** dépôt séparé `D:\Projets\petclinic-agent-b` (`mcp-server/`, `agent-b/`, `evaluation-b/`), PetClinic cloné dans `agent-test-web` (`petclinic-rest/` port 9966, `petclinic-angular/` port 4300)
+- **Dépôts :** `petclinic-*` sont des clones ignorés par git ; `petclinic-repo/` (Thymeleaf) n'est plus utilisé
 
 ### Jour 6 - Livrables
 ```
@@ -58,17 +59,23 @@ Temps moyen :          ~60 sec / parcours
 ⏳ Frontend Angular (à installer J7)
 ```
 
-### Roadmap restante
+### Roadmap
 | Jour | Objectif | État |
 |------|----------|------|
-| 7 | Playwright MCP | À faire |
-| 8 | Outils HTTP | À faire |
-| 9 | Jeu d'évaluation | À faire |
-| 10 | Analyse du diff | À faire |
-| 11 | Flux complet | À faire |
-| 12 | Jenkins | À faire |
-| 13 | Vérificateur | À faire |
-| 14 | Mesure + portfolio | À faire |
+| 7 | Serveur MCP Playwright | ✅ 9 outils, démo réelle |
+| 8 | Outils HTTP | ✅ `appeler_api` |
+| 9 | Jeu d'évaluation | ✅ 10 régressions, 5 PR saines |
+| 10 | Analyse du diff | ✅ `lire_diff`, `analyser_diff` |
+| 11 | Flux complet | ✅ Agent et vérificateur, mesuré |
+| 12 | Jenkins | ⚠️ `Jenkinsfile` écrit, non testé |
+| 13 | Vérificateur et faux positifs | ✅ Verdict par outil, retry réseau |
+| 14 | Mesure + portfolio | ⚠️ Mesuré, voir ci-dessous |
+
+### Résultats mesurés (Haiku 4.5, mode réel)
+- Corpus de réglage : 7/10 régressions, 0/5 fausses alertes (optimiste : prompts ajustés dessus).
+- Corpus de contrôle : 2/4 régressions sur deux runs, 0/2 fausses alertes.
+- Corpus vierge (jamais vu avant le run) : 3/3 régressions relues à la main, 0/2 fausses alertes. Un seul essai.
+- Coût moyen : environ 0,07 $ par PR.
 
 ### Cibles de performance
 - Détecter : 7/10 régressions
@@ -186,10 +193,11 @@ cd ..\evaluation
 npm run evaluate
 
 # Projet B : Lancer PetClinic
-cd petclinic-repo
-docker-compose up -d
-mvn spring-boot:run
-# API : http://localhost:8080/api
+cd petclinic-rest;    mvn spring-boot:run              # API : http://localhost:9966/petclinic/api/
+cd petclinic-angular; npx ng serve --port 4300         # Front : http://localhost:4300
+
+# Projet B : Tester une PR (mode simulé, gratuit)
+cd evaluation-b; node evaluate.js R04
 ```
 
 ---
@@ -239,7 +247,7 @@ mvn spring-boot:run
 > Conçu et développé un agent IA autonome en Java 25 / Spring Boot qui exécute une boucle d'agent itérative via l'API Claude, gère 8 outils de navigation (Playwright), applique des garde-fous (limites en actions, durée, budget), valide les bugs par un vérificateur IA. 111 tests automatisés, historique PostgreSQL, score mesuré (1,33 bugs/parcours). Défi identifié : score 91% en dessous de la cible, à investiguer.
 
 ### Projekt B
-> En cours : Agent de non-régression qui teste automatiquement qu'une PR sur Spring Boot ne casse rien dans le frontend Angular. Stack : PetClinic, Docker, Jenkins, Playwright MCP. Cible : détecter 7/10 régressions injectées, zéro faux positif sur 5 PR saines.
+> Conçu un agent de non-régression qui teste si une PR sur l'API Spring Boot casse le front Angular. Serveur MCP Playwright, analyse de diff, vérificateur indépendant par outil. Mesuré en mode réel : 3 régressions sur 3 détectées sur un corpus vierge, 0 fausse alerte sur 2 PR saines, environ 0,07 $ par PR. Sur un autre corpus de contrôle : 2 régressions sur 4.
 
 ---
 
@@ -253,5 +261,5 @@ mvn spring-boot:run
 
 ---
 
-**🎯 Prochaine étape :** Jour 7 - Playwright MCP  
+**🎯 Prochaine étape :** mesure de variance et PR inédites (Projet B), test Jenkins  
 **📅 Échéance portfolio :** 22 novembre 2026 (Jour 22)
