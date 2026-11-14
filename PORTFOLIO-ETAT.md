@@ -67,7 +67,7 @@ Temps moyen :          ~60 sec / parcours
 | 9 | Jeu d'évaluation | ✅ 10 régressions, 5 PR saines |
 | 10 | Analyse du diff | ✅ `lire_diff`, `analyser_diff` |
 | 11 | Flux complet | ✅ Agent et vérificateur, mesuré |
-| 12 | Jenkins | ✅ CI verte, pipeline PR exécuté en mode réel (Docker) |
+| 12 | Jenkins | ✅ CI verte, vraie PR GitHub testée et commentée par l'agent |
 | 13 | Vérificateur et faux positifs | ✅ Verdict par outil, retry réseau |
 | 14 | Mesure + portfolio | ⚠️ Mesuré, voir ci-dessous |
 
@@ -247,7 +247,7 @@ cd evaluation-b; node evaluate.js R04
 > Conçu et développé un agent IA autonome en Java 25 / Spring Boot qui exécute une boucle d'agent itérative via l'API Claude, gère 8 outils de navigation (Playwright), applique des garde-fous (limites en actions, durée, budget), valide les bugs par un vérificateur IA. 111 tests automatisés, historique PostgreSQL, score mesuré (1,33 bugs/parcours). Défi identifié : score 91% en dessous de la cible, à investiguer.
 
 ### Projekt B
-> Conçu un agent de non-régression qui teste si une PR sur l'API Spring Boot casse le front Angular. Serveur MCP Playwright, analyse de diff, vérificateur indépendant par outil. Mesuré en mode réel : 3 régressions sur 3 détectées sur un corpus vierge, 0 fausse alerte sur 2 PR saines, environ 0,07 $ par PR. Sur un autre corpus de contrôle : 2 régressions sur 4.
+> Conçu un agent de non-régression qui teste si une PR sur l'API Spring Boot casse le front Angular. Serveur MCP Playwright, analyse de diff, vérificateur indépendant par outil. Intégré à Jenkins : l'agent teste une PR GitHub et publie son rapport en commentaire. Mesuré en mode réel : 3 régressions sur 3 détectées sur un corpus vierge, 0 fausse alerte sur 2 PR saines, environ 0,07 $ par PR. Sur un autre corpus de contrôle : 2 régressions sur 4.
 
 ---
 
