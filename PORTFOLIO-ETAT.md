@@ -44,7 +44,7 @@ Temps moyen :          ~60 sec / parcours
 ## Projet B : ✅ Jours 6-14 réalisés, mesure en cours
 
 ### État
-- **Phase :** Agent et corpus terminés, mesure faite, Jenkins non testé
+- **Phase :** Agent, corpus, mesures et Jenkins terminés
 - **Status :** Agent de non-régression opérationnel en mode réel
 - **Localisation :** dépôt séparé `D:\Projets\petclinic-agent-b` (`mcp-server/`, `agent-b/`, `evaluation-b/`), PetClinic cloné dans `agent-test-web` (`petclinic-rest/` port 9966, `petclinic-angular/` port 4300)
 - **Dépôts :** `petclinic-*` sont des clones ignorés par git ; `petclinic-repo/` (Thymeleaf) n'est plus utilisé
@@ -67,7 +67,7 @@ Temps moyen :          ~60 sec / parcours
 | 9 | Jeu d'évaluation | ✅ 10 régressions, 5 PR saines |
 | 10 | Analyse du diff | ✅ `lire_diff`, `analyser_diff` |
 | 11 | Flux complet | ✅ Agent et vérificateur, mesuré |
-| 12 | Jenkins | ⚠️ `Jenkinsfile` écrit, non testé |
+| 12 | Jenkins | ✅ CI verte, pipeline PR exécuté en mode réel (Docker) |
 | 13 | Vérificateur et faux positifs | ✅ Verdict par outil, retry réseau |
 | 14 | Mesure + portfolio | ⚠️ Mesuré, voir ci-dessous |
 
